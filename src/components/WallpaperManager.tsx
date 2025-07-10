@@ -2,7 +2,6 @@
 
 import { useState, useEffect, FormEvent } from 'react';
 
-// Define a type for our wallpaper object for TypeScript
 interface Wallpaper {
   id: string;
   name: string;
@@ -12,14 +11,10 @@ interface Wallpaper {
 }
 
 export default function WallpaperManager() {
-  // State to hold the list of wallpapers fetched from the API
   const [wallpapers, setWallpapers] = useState<Wallpaper[]>([]);
-  // State to manage loading indicators
   const [isLoading, setIsLoading] = useState(true);
-  // State to handle any errors
   const [error, setError] = useState('');
   
-  // --- Data Fetching ---
   const fetchWallpapers = async () => {
     setIsLoading(true);
     try {
@@ -27,21 +22,19 @@ export default function WallpaperManager() {
       if (!res.ok) throw new Error('Failed to fetch wallpapers');
       const data = await res.json();
       setWallpapers(data);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) { // Changed
+      if (err instanceof Error) setError(err.message);
+      else setError('An unknown error occurred');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // useEffect hook to run fetchWallpapers() once when the component loads
   useEffect(() => {
     fetchWallpapers();
   }, []);
 
-  // --- Delete Handler ---
   const handleDelete = async (wallpaperId: string) => {
-    // Confirm before deleting
     if (!confirm('Are you sure you want to delete this wallpaper?')) {
       return;
     }
@@ -60,18 +53,16 @@ export default function WallpaperManager() {
         throw new Error(data.message || 'Failed to delete wallpaper');
       }
       
-      // If successful, refresh the list of wallpapers
       fetchWallpapers();
 
-    } catch (err: any) {
-      alert(`Error: ${err.message}`);
+    } catch (err: unknown) { // Changed
+      if (err instanceof Error) alert(`Error: ${err.message}`);
+      else alert('An unknown error occurred');
     }
   };
   
-    // --- Upload Handler ---
   const handleUpload = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // NEW: Save a direct reference to the form element before any async operations.
     const form = e.currentTarget; 
     const formData = new FormData(form);
     
@@ -90,23 +81,21 @@ export default function WallpaperManager() {
             throw new Error(data.message || 'Upload failed');
         }
 
-        // CHANGED: Use our saved reference to reset the form.
         form.reset(); 
         fetchWallpapers();
         alert('Wallpaper uploaded successfully!');
 
-    } catch (err: any) {
-        alert(`Error: ${err.message}`);
+    } catch (err: unknown) { // Changed
+      if (err instanceof Error) alert(`Error: ${err.message}`);
+      else alert('An unknown error occurred');
     }
   };
 
-  // --- Render Logic ---
   if (isLoading) return <p>Loading wallpapers...</p>;
   if (error) return <p className="text-red-500">Error: {error}</p>;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      {/* Upload Form Section */}
       <div className="lg:col-span-1 p-6 bg-white rounded-lg shadow-md">
         <h2 className="text-2xl font-bold mb-4">Upload New Wallpaper</h2>
         <form onSubmit={handleUpload} className="space-y-4">
@@ -126,12 +115,13 @@ export default function WallpaperManager() {
         </form>
       </div>
 
-      {/* Wallpaper Gallery Section */}
       <div className="lg:col-span-2">
         <h2 className="text-2xl font-bold mb-4">Existing Wallpapers</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {wallpapers.map((wallpaper) => (
             <div key={wallpaper.id} className="relative group bg-gray-200 rounded-lg overflow-hidden">
+              {/* The comment below disables the warning for the next line */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={wallpaper.thumbnail_url} alt={wallpaper.name} className="w-full h-48 object-cover" />
               <div className="absolute bottom-0 left-0 right-0 p-2 bg-black bg-opacity-50 text-white">
                 <p className="text-sm font-semibold truncate">{wallpaper.name}</p>
