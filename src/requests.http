@@ -1,0 +1,44 @@
+### Admin Login Request
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@vraja.com",
+  "password": "password123"
+}
+### TEST 1: Try to access the protected route WITHOUT a token
+# This request should be BLOCKED by the middleware with a 401 error.
+GET http://localhost:3000/api/admin/test
+
+
+### TEST 2: Access the protected route WITH a valid token
+# NOTE: You must first run the login request above, then copy the
+# entire token string and paste it after "Bearer " below.
+GET http://localhost:3000/api/admin/test
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkM2Y3NWI2OS02MmQxLTRiMGUtOGY1ZC04YzA0NDJmODM3MDkiLCJlbWFpbCI6ImFkbWluQHZyYWphLmNvbSIsImlhdCI6MTc1MjA5MDMxOCwiZXhwIjoxNzUyMDkzOTE4fQ.rLEn0SvQQ8LDumGAZ2hYAQ_RDJvM3wIerI9BrrvJo2E
+### UPLOAD A NEW WALLPAPER
+# Note: The 'Content-Type' header is set automatically by the REST Client
+# when using the 'multipart/form-data' boundary.
+POST http://localhost:3000/api/admin/wallpapers
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkM2Y3NWI2OS02MmQxLTRiMGUtOGY1ZC04YzA0NDJmODM3MDkiLCJlbWFpbCI6ImFkbWluQHZyYWphLmNvbSIsImlhdCI6MTc1MjE2NTY1OCwiZXhwIjoxNzUyMTY5MjU4fQ.L6oP9LCljnpH4IFN7rGmYqAgdLKb5hjz6zidNdLOE3Y
+Content-Type: multipart/form-data; boundary=boundary-12345
+
+--boundary-12345
+
+Content-Disposition: form-data; name="name"
+
+Radha-kunda at Sunset
+
+--boundary-12345
+
+Content-Disposition: form-data; name="category"
+
+Vrindavan
+
+--boundary-12345
+
+Content-Disposition: form-data; name="image"; filename="krishnawallpaperone.jpg"
+
+< "D:\download\krishnawallpaperone.jpg"
+
+--boundary-12345--
