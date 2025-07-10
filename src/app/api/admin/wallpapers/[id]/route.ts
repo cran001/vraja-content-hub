@@ -9,13 +9,12 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// The 'params' object is automatically passed to the function
-// when using a dynamic route. It contains the route parameters.
+// This is the updated, more robust function signature that Vercel expects.
 export async function DELETE(
   req: Request, 
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
-  const { id } = params; // Extract the wallpaper ID from the URL
+  const { id } = context.params; // Extract the ID from the context object
 
   try {
     // 1. Find the wallpaper in the DB to get its Cloudinary public_id
