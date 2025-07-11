@@ -1,5 +1,3 @@
-// FORCED REFRESH v4 - This comment makes the file undeniably new.
-
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { v2 as cloudinary } from 'cloudinary';
@@ -28,6 +26,13 @@ export async function DELETE(
     await cloudinary.uploader.destroy(publicId);
     await query('DELETE FROM wallpapers WHERE id = $1', [id]);
 
+    return NextResponse.json({ message: 'Wallpaper deleted successfully.' }, { status: 200 });
+
+  } catch (error) {
+    console.error('Failed to delete wallpaper:', error);
+    return NextResponse.json({ message: 'An internal server error occurred.' }, { status: 500 });
+  }
+}
     return NextResponse.json({ message: 'Wallpaper deleted successfully.' }, { status: 200 });
 
   } catch (error) {
