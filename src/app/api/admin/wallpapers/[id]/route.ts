@@ -8,13 +8,15 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// This is the definitive, official, and correct function signature.
-// We are destructuring the second argument directly into { params }.
+// THE FINAL, BRUTE-FORCE FIX:
+// We are defining the 'context' object as a whole, and then extracting
+// the id from it on a separate line inside the function.
+// This is the most explicit and fundamental way to write this.
 export async function DELETE(
-  request: Request, // The first argument is the request itself.
-  { params }: { params: { id: string } } // The second argument is an object containing params.
+  request: Request,
+  context: { params: { id: string } }
 ) {
-  const { id } = params; // Extract the ID from the destructured params.
+  const id = context.params.id;
 
   try {
     const findResult = await query('SELECT public_id FROM wallpapers WHERE id = $1', [id]);
