@@ -1,28 +1,25 @@
-"use client";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+import { AuthProvider } from "@/context/AuthContext"; // Import our new provider
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+const inter = Inter({ subsets: ["latin"] });
 
-export default function DashboardLayout({
+export const metadata: Metadata = {
+  title: "Vraja Realm Content Hub",
+  description: "Admin panel for Vraja Realm",
+};
+
+export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
-  const router = useRouter();
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-      router.replace('/');
-    } else {
-      setIsLoading(false);
-    }
-  }, [router]);
-
-  if (isLoading) {
-    return <p className="text-center p-8">Loading...</p>;
-  }
-
-  return <>{children}</>;
+}>) {
+  return (
+    <html lang="en">
+      <body className={inter.className}>
+        <AuthProvider>{children}</AuthProvider> {/* Wrap children with the provider */}
+      </body>
+    </html>
+  );
 }
