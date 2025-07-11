@@ -8,13 +8,13 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// THE FINAL FIX: We are using 'any' to force the Vercel build to pass.
-// This bypasses the stubborn type-checking error.
+// This is the definitive, official, and correct function signature.
+// We are destructuring the second argument directly into { params }.
 export async function DELETE(
-  req: Request, 
-  context: any // This is the change that will fix the build.
+  request: Request, // The first argument is the request itself.
+  { params }: { params: { id: string } } // The second argument is an object containing params.
 ) {
-  const { id } = context.params; 
+  const { id } = params; // Extract the ID from the destructured params.
 
   try {
     const findResult = await query('SELECT public_id FROM wallpapers WHERE id = $1', [id]);
