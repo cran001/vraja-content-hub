@@ -1,15 +1,11 @@
-import AuthGuard from "@/components/AuthGuard";
-import WallpaperManager from "@/components/WallpaperManager";
+import DashboardClient from "@/components/DashboardClient";
 
 export default function DashboardPage() {
+  // This is now a simple Server Component.
+  // Its only job is to render our smart Client Component.
   return (
-    <AuthGuard>
-      <main className="p-8 bg-gray-50 min-h-screen">
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-4xl font-bold mb-8">Vraja Realm Dashboard</h1>
-          <WallpaperManager />
-        </div>
-      </main>
-    </AuthGuard>
+    <main className="p-8 bg-gray-50 min-h-screen">
+      <DashboardClient />
+    </main>
   );
 }
