@@ -1,5 +1,5 @@
 ### Admin Login Request
-POST http://localhost:3000/api/auth/login
+POST https://vraja-content-hub.vercel.app/api/auth/login
 Content-Type: application/json
 
 {
@@ -8,7 +8,7 @@ Content-Type: application/json
 }
 ### TEST 1: Try to access the protected route WITHOUT a token
 # This request should be BLOCKED by the middleware with a 401 error.
-GET http://localhost:3000/api/admin/test
+GET https://vraja-content-hub.vercel.app/api/admin/test
 
 
 ### TEST 2: Access the protected route WITH a valid token
@@ -16,27 +16,28 @@ GET http://localhost:3000/api/admin/test
 # entire token string and paste it after "Bearer " below.
 
 ### UPLOAD A NEW WALLPAPER (Final Explicit Version)
-POST http://localhost:3000/api/admin/wallpapers
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkM2Y3NWI2OS02MmQxLTRiMGUtOGY1ZC04YzA0NDJmODM3MDkiLCJlbWFpbCI6ImFkbWluQHZyYWphLmNvbSIsImlhdCI6MTc1MjE2ODM5MCwiZXhwIjoxNzUyMTcxOTkwfQ.jKHfxz9HgnpKLxd08NuGLqes8_cu8RCrPylTTTOSnP4
+POST https://vraja-content-hub.vercel.app/api/admin/wallpapers
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJhOTBjMjJlNy03NzA1LTRlY2YtYTA3Mi1kMTA3MzQwOGRiN2QiLCJlbWFpbCI6ImFkbWluQHZyYWphLmNvbSIsImlhdCI6MTc1MjI1MzQ1MSwiZXhwIjoxNzUyMjU3MDUxfQ.KtxcYxB9GQN1pdCft4WewXLrgQvJUjTrZBzQHUSpSLM
 Content-Type: multipart/form-data; boundary=----MyBoundary
 
 ------MyBoundary
 Content-Disposition: form-data; name="name"
 
-Radha-kunda at Sunset
+Krishna
 ------MyBoundary
 Content-Disposition: form-data; name="category"
 
-Vrindavan
+Deity
 ------MyBoundary
-Content-Disposition: form-data; name="image"; filename="krishnawallpaperone.jpg"
+Content-Disposition: form-data; name="image"; filename="Krishnawallpaper2.jpg"
 Content-Type: image/jpeg
 
-< D:\download\krishnawallpaperone.jpg
+< D:\download\Krishnawallpaper2.jpg
 ------MyBoundary--
 ### GET ALL ACTIVE WALLPAPERS (Public)
-GET http://localhost:3000/api/v1/wallpapers
+GET https://vraja-content-hub.vercel.app/api/v1/wallpapers
 
-### DELETE A WALLPAPER (Admin)
-DELETE http://localhost:3000/api/admin/wallpapers/4b21c6a1-7f28-4a6d-a3bb-e9ada6e0744f
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkM2Y3NWI2OS02MmQxLTRiMGUtOGY1ZC04YzA0NDJmODM3MDkiLCJlbWFpbCI6ImFkbWluQHZyYWphLmNvbSIsImlhdCI6MTc1MjE2OTU1NSwiZXhwIjoxNzUyMTczMTU1fQ.yjqKEwqKbE7e9dDZbEiMxMZg75NMJBOgUfbd5Ss3xCg
+### DELETE A WALLPAPER (New Production Version)
+# Note the new URL structure with ?id=
+DELETE https://vraja-content-hub.vercel.app/api/admin/wallpapers?id=380ba7f4-d231-485c-84a1-a9c94a5698df
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJhOTBjMjJlNy03NzA1LTRlY2YtYTA3Mi1kMTA3MzQwOGRiN2QiLCJlbWFpbCI6ImFkbWluQHZyYWphLmNvbSIsImlhdCI6MTc1MjI1MzQ1MSwiZXhwIjoxNzUyMjU3MDUxfQ.KtxcYxB9GQN1pdCft4WewXLrgQvJUjTrZBzQHUSpSLM
