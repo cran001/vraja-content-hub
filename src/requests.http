@@ -48,3 +48,14 @@ GET https://vraja-content-hub.vercel.app/api/v1/wallpapers
 
 ### TEST B: Get only wallpapers in a specific category
 GET https://vraja-content-hub.vercel.app/api/v1/wallpapers?category=Deities
+
+### UPDATE A WALLPAPER (Admin)
+PUT https://vraja-content-hub.vercel.app/api/admin/wallpapers
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJhOTBjMjJlNy03NzA1LTRlY2YtYTA3Mi1kMTA3MzQwOGRiN2QiLCJlbWFpbCI6ImFkbWluQHZyYWphLmNvbSIsImlhdCI6MTc1MzIxOTM4OSwiZXhwIjoxNzUzMjIyOTg5fQ.SHy9g6-dCeuik8NhQEN5YKH_S_YwxZbguYQ9-xSSpHw
+Content-Type: application/json
+
+{
+  "id": "7a119940-2343-4f8d-bec0-ff467f92adc6",
+  "name": "krishna",
+  "category": "Deities"
+}
