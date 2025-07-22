@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext'; // Import our new useAuth hook
 
 export default function LoginPage() {
-  const router = useRouter();
+  const { login } = useAuth(); // Get the login function from our context
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -16,26 +16,18 @@ export default function LoginPage() {
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
-
       const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Something went wrong.');
+      
+      // Call the login function from our context. It handles the rest.
+      login(data.token);
 
-      if (!res.ok) {
-        throw new Error(data.message || 'Something went wrong.');
-      }
-
-      localStorage.setItem('authToken', data.token);
-      router.push('/dashboard');
-
-    } catch (err: unknown) { // This block is the part that changed
+    } catch (err: unknown) {
       let message = 'An unknown error occurred.';
-      if (err instanceof Error) {
-        message = err.message;
-      }
+      if (err instanceof Error) message = err.message;
       setError(message);
     }
   };
@@ -48,47 +40,16 @@ export default function LoginPage() {
         </h1>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Email address
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="block w-full px-3 py-2 mt-1 placeholder-gray-400 border border-gray-300 rounded-md shadow-sm appearance-none focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            />
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email address</label>
+            <input id="email" name="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm" />
           </div>
           <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="block w-full px-3 py-2 mt-1 placeholder-gray-400 border border-gray-300 rounded-md shadow-sm appearance-none focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            />
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+            <input id="password" name="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm" />
           </div>
           {error && <p className="text-sm text-center text-red-600">{error}</p>}
           <div>
-            <button
-              type="submit"
-              className="w-full px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              Sign in
-            </button>
+            <button type="submit" className="w-full px-4 py-2 text-sm font-medium text-white bg-indigo-600 border rounded-md shadow-sm hover:bg-indigo-700">Sign in</button>
           </div>
         </form>
       </div>
