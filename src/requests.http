@@ -41,3 +41,10 @@ GET https://vraja-content-hub.vercel.app/api/v1/wallpapers
 # Note the new URL structure with ?id=
 DELETE https://vraja-content-hub.vercel.app/api/admin/wallpapers?id=380ba7f4-d231-485c-84a1-a9c94a5698df
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJhOTBjMjJlNy03NzA1LTRlY2YtYTA3Mi1kMTA3MzQwOGRiN2QiLCJlbWFpbCI6ImFkbWluQHZyYWphLmNvbSIsImlhdCI6MTc1MjI1MzQ1MSwiZXhwIjoxNzUyMjU3MDUxfQ.KtxcYxB9GQN1pdCft4WewXLrgQvJUjTrZBzQHUSpSLM
+
+### TEST A: Get all wallpapers (no filter)
+GET https://vraja-content-hub.vercel.app/api/v1/wallpapers
+
+
+### TEST B: Get only wallpapers in a specific category
+GET https://vraja-content-hub.vercel.app/api/v1/wallpapers?category=Deities

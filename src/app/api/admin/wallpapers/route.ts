@@ -1,7 +1,8 @@
-import { NextResponse, NextRequest } from 'next/server'; // Import NextRequest
+import { NextResponse, NextRequest } from 'next/server';
 import { v2 as cloudinary } from 'cloudinary';
 import { query } from '@/lib/db';
 
+// Configure Cloudinary (this applies to all functions in this file)
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -9,7 +10,7 @@ cloudinary.config({
   secure: true,
 });
 
-// --- THIS IS OUR EXISTING UPLOAD FUNCTION (NO CHANGES) ---
+// --- UPLOAD A NEW WALLPAPER ---
 export async function POST(req: Request) {
   try {
     const formData = await req.formData();
@@ -53,11 +54,9 @@ export async function POST(req: Request) {
   }
 }
 
-// --- THIS IS OUR NEW DELETE FUNCTION ---
-// It lives in the same file and has a different signature.
+// --- DELETE A WALLPAPER ---
 export async function DELETE(req: NextRequest) {
   try {
-    // We get the ID from a query parameter, e.g., /api/admin/wallpapers?id=...
     const id = req.nextUrl.searchParams.get('id');
 
     if (!id) {
@@ -78,6 +77,36 @@ export async function DELETE(req: NextRequest) {
 
   } catch (error) {
     console.error('Failed to delete wallpaper:', error);
+    return NextResponse.json({ message: 'An internal server error occurred.' }, { status: 500 });
+  }
+}
+
+// --- UPDATE A WALLPAPER ---
+export async function PUT(req: NextRequest) {
+  try {
+    const { id, name, category } = await req.json();
+
+    if (!id || !name || !category) {
+      return NextResponse.json({ message: 'Missing required fields (id, name, category).' }, { status: 400 });
+    }
+
+    const dbResult = await query(
+      `UPDATE wallpapers
+       SET name = $1, category = $2, updated_at = current_timestamp
+       WHERE id = $3
+       RETURNING *`,
+      [name, category, id]
+    );
+
+    if (dbResult.rows.length === 0) {
+      return NextResponse.json({ message: 'Wallpaper not found.' }, { status: 404 });
+    }
+
+    const updatedWallpaper = dbResult.rows[0];
+    return NextResponse.json(updatedWallpaper, { status: 200 });
+
+  } catch (error) {
+    console.error('Failed to update wallpaper:', error);
     return NextResponse.json({ message: 'An internal server error occurred.' }, { status: 500 });
   }
 }
