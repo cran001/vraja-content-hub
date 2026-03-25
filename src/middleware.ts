@@ -13,7 +13,6 @@ export async function middleware(request: NextRequest) {
     );
   }
 
-  // Ensure the JWT_SECRET is defined before using it
   const secretString = process.env.JWT_SECRET;
   if (!secretString) {
     throw new Error('JWT_SECRET is not defined in the environment variables.');
@@ -21,8 +20,16 @@ export async function middleware(request: NextRequest) {
   const secret = new TextEncoder().encode(secretString);
 
   try {
-    await jwtVerify(token, secret);
-    return NextResponse.next();
+    const { payload } = await jwtVerify(token, secret);
+
+    // Inject user context into headers so downstream route handlers
+    // can read author identity without re-decoding the token.
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set('x-user-id',   String(payload.userId ?? ''));
+    requestHeaders.set('x-user-role', String(payload.role   ?? 'super_admin'));
+    requestHeaders.set('x-user-email', String(payload.email ?? ''));
+
+    return NextResponse.next({ request: { headers: requestHeaders } });
   } catch {
     return new NextResponse(
       JSON.stringify({ success: false, message: 'Invalid token.' }),
@@ -31,7 +38,6 @@ export async function middleware(request: NextRequest) {
   }
 }
 
-// THIS IS THE ONLY CONFIG OBJECT THAT SHOULD BE IN THE FILE
 export const config = {
-  matcher: '/api/admin/:path*', // Protect all routes under /api/admin
+  matcher: '/api/admin/:path*',
 };

@@ -1,56 +1,118 @@
 "use client";
 
 import { useState } from 'react';
-import { useAuth } from '@/context/AuthContext'; // Import our new useAuth hook
+import { useAuth } from '@/context/AuthContext';
 
 export default function LoginPage() {
-  const { login } = useAuth(); // Get the login function from our context
-  const [email, setEmail] = useState('');
+  const { login } = useAuth();
+  const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [error,    setError]    = useState('');
+  const [loading,  setLoading]  = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-
+    setError(''); setLoading(true);
     try {
-      const res = await fetch('/api/auth/login', {
+      const res  = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Something went wrong.');
-      
-      // Call the login function from our context. It handles the rest.
+      if (!res.ok) throw new Error(data.message || 'Login failed.');
       login(data.token);
-
     } catch (err: unknown) {
-      let message = 'An unknown error occurred.';
-      if (err instanceof Error) message = err.message;
-      setError(message);
+      setError(err instanceof Error ? err.message : 'An unknown error occurred.');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <main className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
-        <h1 className="text-2xl font-bold text-center text-gray-900">
-          Vraja Realm Content Hub
-        </h1>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email address</label>
-            <input id="email" name="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm" />
+    <main style={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: 'var(--bg-base)',
+      padding: '20px',
+    }}>
+      {/* Ambient glow */}
+      <div style={{
+        position: 'fixed', top:'-20%', left:'50%', transform:'translateX(-50%)',
+        width: '600px', height: '600px',
+        background: 'radial-gradient(ellipse, rgba(124,106,247,0.15) 0%, transparent 70%)',
+        pointerEvents: 'none',
+      }} />
+
+      <div style={{
+        width: '100%', maxWidth: '420px',
+        background: 'var(--bg-surface)',
+        border: '1px solid var(--border)',
+        borderRadius: '20px',
+        padding: '40px',
+        boxShadow: '0 24px 60px rgba(0,0,0,0.5)',
+        position: 'relative',
+      }}>
+        {/* Logo */}
+        <div style={{ textAlign:'center', marginBottom:'32px' }}>
+          <div style={{ fontSize:'3rem', marginBottom:'12px' }}>🕌</div>
+          <h1 style={{
+            fontSize: '1.4rem', fontWeight: 800,
+            background: 'linear-gradient(135deg, var(--accent), var(--accent-2))',
+            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+          }}>
+            Vraja Realm
+          </h1>
+          <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+            Content Hub Admin Panel
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} style={{ display:'flex', flexDirection:'column', gap:'18px' }}>
+          <div className="form-group">
+            <label className="form-label" htmlFor="email">Email</label>
+            <input
+              id="email" type="email" required
+              className="form-input"
+              placeholder="admin@example.com"
+              value={email} onChange={e => setEmail(e.target.value)}
+            />
           </div>
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
-            <input id="password" name="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm" />
+
+          <div className="form-group">
+            <label className="form-label" htmlFor="password">Password</label>
+            <input
+              id="password" type="password" required
+              className="form-input"
+              placeholder="••••••••"
+              value={password} onChange={e => setPassword(e.target.value)}
+            />
           </div>
-          {error && <p className="text-sm text-center text-red-600">{error}</p>}
-          <div>
-            <button type="submit" className="w-full px-4 py-2 text-sm font-medium text-white bg-indigo-600 border rounded-md shadow-sm hover:bg-indigo-700">Sign in</button>
-          </div>
+
+          {error && (
+            <div style={{
+              background: 'rgba(248,113,113,0.1)',
+              border: '1px solid rgba(248,113,113,0.3)',
+              borderRadius: '8px',
+              padding: '10px 14px',
+              fontSize: '0.85rem',
+              color: 'var(--danger)',
+            }}>
+              {error}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            className="btn btn-primary"
+            disabled={loading}
+            style={{ justifyContent:'center', padding:'12px', marginTop:'4px' }}
+          >
+            {loading ? <><span className="spinner" /> Signing in…</> : 'Sign In →'}
+          </button>
         </form>
       </div>
     </main>
