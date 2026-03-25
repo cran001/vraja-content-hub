@@ -171,6 +171,7 @@ export default function BulkUploader({ categories, onCategoriesChange }: BulkUpl
           </div>
           
           <input ref={inputRef} type="file" multiple accept="image/*" hidden onChange={onFileChange} />
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           <input ref={dirInputRef} type="file" multiple accept="image/*" hidden onChange={onFileChange} {...{ webkitdirectory: "true", directory: "true" } as any} />
         </div>
 

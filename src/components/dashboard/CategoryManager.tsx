@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useToast } from '@/context/ToastContext';
 
 interface Category { id: string; name: string; parent_id: string | null; level: number; slug: string; }

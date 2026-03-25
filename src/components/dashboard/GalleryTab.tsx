@@ -48,7 +48,7 @@ export default function GalleryTab() {
       setItems(data.items ?? []);
     } catch { showToast('Failed to load gallery.', 'error'); }
     finally { setLoading(false); }
-  }, [filter, page, token]);
+  }, [filter, page, token, showToast]);
 
   useEffect(() => { fetchItems(); }, [fetchItems]);
 

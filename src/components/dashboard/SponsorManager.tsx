@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, ChangeEvent, useEffect } from 'react';
+import { useState, useRef, ChangeEvent, useEffect, useCallback } from 'react';
 import { useToast } from '@/context/ToastContext';
 
 interface Sponsor {
@@ -23,7 +23,7 @@ export default function SponsorManager() {
 
   const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : '';
 
-  const fetchSponsors = async () => {
+  const fetchSponsors = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch('/api/admin/wallpapers?content_type=sponsor', {
@@ -33,9 +33,9 @@ export default function SponsorManager() {
       setSponsors(data.items ?? []);
     } catch { showToast('Failed to load sponsors.', 'error'); }
     finally { setLoading(false); }
-  };
+  }, [token, showToast]);
 
-  useEffect(() => { fetchSponsors(); }, []);
+  useEffect(() => { fetchSponsors(); }, [fetchSponsors]);
 
   const handleFile = (fl: FileList | null) => {
     if (!fl || fl.length === 0) return;
@@ -144,6 +144,7 @@ export default function SponsorManager() {
         <h3 className="card-title">Add Sponsor</h3>
         <div className="drop-zone" style={{ padding:'24px' }} onClick={()=>inputRef.current?.click()}>
           {preview
+            /* eslint-disable-next-line @next/next/no-img-element */
             ? <img src={preview} alt="preview" style={{ maxHeight:'120px', borderRadius:'8px', objectFit:'cover' }} />
             : <><div className="drop-zone-icon">💼</div><div className="drop-zone-hint">Click to select banner</div></>
           }
