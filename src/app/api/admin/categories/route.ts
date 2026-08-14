@@ -8,6 +8,17 @@ import { query } from '@/lib/db';
  * DELETE /api/admin/categories?id=<uuid> — delete a leaf category
  */
 
+function revalidatePublicFeeds() {
+  try {
+    revalidatePath('/api/v1/wallpapers');
+    revalidatePath('/api/v1/darshan');
+    revalidatePath('/api/v1/events');
+    revalidatePath('/api/v1/sponsors');
+  } catch (err) {
+    console.error('Revalidation error:', err);
+  }
+}
+
 // --- GET: return all categories as a flat list; client builds the tree ---
 export async function GET() {
   try {
@@ -55,11 +66,7 @@ export async function POST(req: NextRequest) {
       [name.trim(), slug, parent_id ?? null, level]
     );
 
-    try {
-      revalidatePath('/api/v1/wallpapers');
-    } catch (err) {
-      console.error('Revalidate error:', err);
-    }
+    revalidatePublicFeeds();
 
     return NextResponse.json(rows[0], { status: 201 });
   } catch (error) {
@@ -81,11 +88,7 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ message: 'Category not found.' }, { status: 404 });
     }
 
-    try {
-      revalidatePath('/api/v1/wallpapers');
-    } catch (err) {
-      console.error('Revalidate error:', err);
-    }
+    revalidatePublicFeeds();
 
     return NextResponse.json({ message: 'Category deleted successfully.' }, { status: 200 });
   } catch (error) {
