@@ -8,6 +8,8 @@ import { query } from '@/lib/db';
  *   - category_id : UUID of a category
  *   - content_type : wallpaper | darshan | event | sponsor  (default: wallpaper)
  */
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = request.nextUrl;
@@ -49,7 +51,12 @@ export async function GET(request: NextRequest) {
     sql += ' ORDER BY w.created_at DESC';
 
     const { rows } = await query(sql, params);
-    return NextResponse.json(rows, { status: 200 });
+    return NextResponse.json(rows, {
+      status: 200,
+      headers: {
+        'Cache-Control': 'public, s-maxage=21600, stale-while-revalidate=86400',
+      },
+    });
   } catch (error) {
     console.error('Failed to fetch wallpapers:', error);
     return NextResponse.json(

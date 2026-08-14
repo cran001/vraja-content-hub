@@ -1,4 +1,5 @@
 import { NextResponse, NextRequest } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { v2 as cloudinary } from 'cloudinary';
 import { query } from '@/lib/db';
 
@@ -8,6 +9,17 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
   secure: true,
 });
+
+function revalidatePublicFeeds() {
+  try {
+    revalidatePath('/api/v1/wallpapers');
+    revalidatePath('/api/v1/darshan');
+    revalidatePath('/api/v1/events');
+    revalidatePath('/api/v1/sponsors');
+  } catch (err) {
+    console.error('Revalidation error:', err);
+  }
+}
 
 // Helper: upload one file buffer to Cloudinary and return URLs
 async function uploadToCloudinary(
@@ -89,6 +101,7 @@ export async function POST(req: NextRequest) {
       inserted.push(rows[0]);
     }
 
+    revalidatePublicFeeds();
     return NextResponse.json(
       { message: `${inserted.length} image(s) uploaded successfully.`, items: inserted },
       { status: 201 }
@@ -113,6 +126,7 @@ export async function DELETE(req: NextRequest) {
     await cloudinary.uploader.destroy(find.rows[0].public_id);
     await query('DELETE FROM wallpapers WHERE id = $1', [id]);
 
+    revalidatePublicFeeds();
     return NextResponse.json({ message: 'Deleted successfully.' }, { status: 200 });
   } catch (error) {
     console.error('Delete error:', error);
@@ -154,6 +168,7 @@ export async function PUT(req: NextRequest) {
     );
 
     if (rows.length === 0) return NextResponse.json({ message: 'Not found.' }, { status: 404 });
+    revalidatePublicFeeds();
     return NextResponse.json(rows[0], { status: 200 });
   } catch (error) {
     console.error('Update error:', error);

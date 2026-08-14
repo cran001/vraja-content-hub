@@ -7,6 +7,8 @@ import { query } from '@/lib/db';
  * Android blends these into the wallpaper/darshan rotation as native images —
  * completely bypassing ad networks and Play Store ad SDK restrictions.
  */
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const { rows } = await query(
@@ -19,7 +21,12 @@ export async function GET() {
       []
     );
 
-    return NextResponse.json(rows, { status: 200 });
+    return NextResponse.json(rows, {
+      status: 200,
+      headers: {
+        'Cache-Control': 'public, s-maxage=21600, stale-while-revalidate=86400',
+      },
+    });
   } catch (error) {
     console.error('Failed to fetch sponsors:', error);
     return NextResponse.json(

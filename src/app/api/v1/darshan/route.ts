@@ -6,6 +6,8 @@ import { query } from '@/lib/db';
  * Returns ONLY today's Darshan images.
  * The Android app calls this once per day; Vercel serves a tiny, curated response.
  */
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const { rows } = await query(
@@ -23,7 +25,12 @@ export async function GET() {
 
     return NextResponse.json(
       { date: new Date().toISOString().split('T')[0], items: rows },
-      { status: 200 }
+      {
+        status: 200,
+        headers: {
+          'Cache-Control': 'public, s-maxage=21600, stale-while-revalidate=86400',
+        },
+      }
     );
   } catch (error) {
     console.error('Failed to fetch darshan:', error);

@@ -6,6 +6,8 @@ import { query } from '@/lib/db';
  * Returns festival / special-event images that are active TODAY only.
  * images auto-expire the day after their expiresOn date.
  */
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const { rows } = await query(
@@ -30,7 +32,12 @@ export async function GET() {
 
     return NextResponse.json(
       { date: new Date().toISOString().split('T')[0], items: rows },
-      { status: 200 }
+      {
+        status: 200,
+        headers: {
+          'Cache-Control': 'public, s-maxage=21600, stale-while-revalidate=86400',
+        },
+      }
     );
   } catch (error) {
     console.error('Failed to fetch events:', error);
