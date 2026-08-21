@@ -1,18 +1,46 @@
 "use client";
 
+import { useState, useEffect } from 'react';
+
 interface NavItem {
   id: string;
   icon: string;
   label: string;
 }
 
-const NAV_ITEMS: NavItem[] = [
-  { id: 'gallery',   icon: '🖼️',  label: 'Gallery'          },
-  { id: 'upload',    icon: '⬆️',  label: 'Bulk Upload'      },
-  { id: 'darshan',   icon: '🌅',  label: 'Daily Darshan'    },
-  { id: 'events',    icon: '📅',  label: 'Events Scheduler' },
-  { id: 'sponsors',  icon: '💼',  label: 'Sponsorships'     },
-  { id: 'categories',icon: '🗂️', label: 'Categories'       },
+interface NavGroup {
+  id: string;
+  icon: string;
+  label: string;
+  children: NavItem[];
+}
+
+// Each content type gets its own collapsible section so nothing mixes together.
+const NAV_GROUPS: NavGroup[] = [
+  {
+    id: 'stories', icon: '📖', label: 'Stories',
+    children: [
+      { id: 'books',    icon: '📚', label: 'Books Library' },
+      { id: 'add-book', icon: '➕', label: 'Add New Book'  },
+    ],
+  },
+  {
+    id: 'calendar', icon: '📅', label: 'Calendar',
+    children: [
+      { id: 'calendar-uploads', icon: '🗓️', label: 'Calendar Uploads' },
+    ],
+  },
+  {
+    id: 'wallpapers', icon: '🖼️', label: 'Wallpapers',
+    children: [
+      { id: 'gallery',    icon: '🗂️', label: 'Gallery'          },
+      { id: 'upload',     icon: '⬆️', label: 'Bulk Upload'      },
+      { id: 'darshan',    icon: '🌅', label: 'Daily Darshan'    },
+      { id: 'events',     icon: '📅', label: 'Events Scheduler' },
+      { id: 'sponsors',   icon: '💼', label: 'Sponsorships'     },
+      { id: 'categories', icon: '🏷️', label: 'Categories'       },
+    ],
+  },
 ];
 
 interface SidebarProps {
@@ -23,6 +51,22 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ activeTab, onTabChange, onLogout, userEmail }: SidebarProps) {
+  const [openGroups, setOpenGroups] = useState<string[]>(['stories']);
+
+  // Opening a tab always reveals its section
+  useEffect(() => {
+    const group = NAV_GROUPS.find(g => g.children.some(c => c.id === activeTab));
+    if (group) {
+      setOpenGroups(prev => prev.includes(group.id) ? prev : [...prev, group.id]);
+    }
+  }, [activeTab]);
+
+  const toggleGroup = (groupId: string) => {
+    setOpenGroups(prev =>
+      prev.includes(groupId) ? prev.filter(id => id !== groupId) : [...prev, groupId]
+    );
+  };
+
   return (
     <aside className="sidebar">
       <div className="sidebar-logo">
@@ -31,16 +75,39 @@ export default function Sidebar({ activeTab, onTabChange, onLogout, userEmail }:
       </div>
 
       <nav className="sidebar-nav">
-        {NAV_ITEMS.map(item => (
-          <button
-            key={item.id}
-            className={`nav-item ${activeTab === item.id ? 'active' : ''}`}
-            onClick={() => onTabChange(item.id)}
-          >
-            <span className="nav-icon">{item.icon}</span>
-            {item.label}
-          </button>
-        ))}
+        {NAV_GROUPS.map(group => {
+          const isOpen = openGroups.includes(group.id);
+          return (
+            <div key={group.id} className={`nav-group ${isOpen ? 'open' : ''}`}>
+              <button
+                type="button"
+                className="nav-group-header"
+                onClick={() => toggleGroup(group.id)}
+                aria-expanded={isOpen}
+              >
+                <span className="nav-group-chevron">▸</span>
+                <span className="nav-icon">{group.icon}</span>
+                {group.label}
+              </button>
+
+              {isOpen && (
+                <div className="nav-sublist">
+                  {group.children.map(item => (
+                    <button
+                      type="button"
+                      key={item.id}
+                      className={`nav-subitem ${activeTab === item.id ? 'active' : ''}`}
+                      onClick={() => onTabChange(item.id)}
+                    >
+                      <span className="nav-icon">{item.icon}</span>
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </nav>
 
       <div className="sidebar-footer">

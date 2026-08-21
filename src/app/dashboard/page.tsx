@@ -11,10 +11,16 @@ import DarshanUploader from '@/components/dashboard/DarshanUploader';
 import EventsScheduler from '@/components/dashboard/EventsScheduler';
 import SponsorManager from '@/components/dashboard/SponsorManager';
 import GalleryTab from '@/components/dashboard/GalleryTab';
+import BooksManager from '@/components/dashboard/BooksManager';
+import BookCreateForm from '@/components/dashboard/BookCreateForm';
+import CalendarPlaceholder from '@/components/dashboard/CalendarPlaceholder';
 
 interface Category { id: string; name: string; parent_id: string | null; level: number; slug: string; }
 
 const TAB_META: Record<string, { title: string; description: string }> = {
+  books:           { title: '📚 Books Library',      description: 'Story books for the app library — open a book to manage its pages.' },
+  'add-book':      { title: '➕ Add New Book',       description: 'Create a book with a title, description and cover; add pages right after.' },
+  'calendar-uploads': { title: '🗓️ Calendar Uploads', description: 'Reserved space for calendar content — the format will be decided later.' },
   gallery:    { title: '🖼️ Gallery',           description: 'Browse, filter, and manage all uploaded content.' },
   upload:     { title: '⬆️ Bulk Upload',         description: 'Drag and drop up to 50 images with shared metadata in one shot.' },
   darshan:    { title: '🌅 Daily Darshan',        description: 'Upload today\'s deity photos — served by the API on the selected date only.' },
@@ -64,6 +70,9 @@ function DashboardInner() {
         </header>
 
         <div className="page-body">
+          {tab === 'books'           && <BooksManager onAddNew={() => setTab('add-book')} />}
+          {tab === 'add-book'        && <BookCreateForm onCreated={() => setTab('books')} />}
+          {tab === 'calendar-uploads' && <CalendarPlaceholder />}
           {tab === 'gallery'    && <GalleryTab />}
           {tab === 'upload'     && <BulkUploader categories={categories} onCategoriesChange={fetchCategories} />}
           {tab === 'darshan'    && <DarshanUploader />}
