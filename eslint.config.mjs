@@ -11,6 +11,9 @@ const compat = new FlatCompat({
 
 const eslintConfig = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
+  { ignores: [".next/**", ".test-db/**", "node_modules/**"] },
+  // Node's legacy migration/seed entrypoints are CommonJS.
+  { files: ["scripts/*.js"], rules: { "@typescript-eslint/no-require-imports": "off" } },
 ];
 
 export default eslintConfig;

@@ -1,0 +1,16 @@
+{
+  "status": "ready",
+  "apiVersion": "1.1",
+  "revision": "local-unreleased",
+  "capabilities": [
+    "daily-verse",
+    "dated-events",
+    "wallpaper-categories",
+    "media-metadata",
+    "scripture-version-hash",
+    "book-stories",
+    "lock-screen-quotes"
+  ],
+  "schemaReady": true,
+  "androidConsumerVerified": false
+}

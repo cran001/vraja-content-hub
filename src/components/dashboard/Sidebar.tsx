@@ -17,17 +17,33 @@ interface NavGroup {
 
 // Each content type gets its own collapsible section so nothing mixes together.
 const NAV_GROUPS: NavGroup[] = [
+  { id: 'editorial', icon: '📝', label: 'Editorial', children: [
+    { id: 'readiness', icon: '✓', label: 'Readiness' },
+    { id: 'publishing', icon: '📝', label: 'Publishing' },
+    { id: 'contributions', icon: '📥', label: 'Contributions' },
+    { id: 'quotes', icon: '💬', label: 'Quotes / Reflections' },
+  ] },
   {
     id: 'stories', icon: '📖', label: 'Stories',
     children: [
       { id: 'books',    icon: '📚', label: 'Books Library' },
+      { id: 'story-feed', icon: '📖', label: 'Katha Feed' },
       { id: 'add-book', icon: '➕', label: 'Add New Book'  },
     ],
   },
   {
     id: 'calendar', icon: '📅', label: 'Calendar',
     children: [
-      { id: 'calendar-uploads', icon: '🗓️', label: 'Calendar Uploads' },
+      { id: 'dated-events',     icon: '🗓️', label: 'Dated Events'     },
+      { id: 'calendar-uploads', icon: '🗓️', label: 'Calendar Manager' },
+      { id: 'panchang-preview', icon: '🌙', label: 'Panchang Preview'  },
+    ],
+  },
+  {
+    id: 'scriptures', icon: '📜', label: 'Scriptures',
+    children: [
+      { id: 'scriptures', icon: '📜', label: 'Scripture Library' },
+      { id: 'daily-verses', icon: '🪷', label: 'Daily Verses' },
     ],
   },
   {
@@ -36,7 +52,7 @@ const NAV_GROUPS: NavGroup[] = [
       { id: 'gallery',    icon: '🗂️', label: 'Gallery'          },
       { id: 'upload',     icon: '⬆️', label: 'Bulk Upload'      },
       { id: 'darshan',    icon: '🌅', label: 'Daily Darshan'    },
-      { id: 'events',     icon: '📅', label: 'Events Scheduler' },
+      { id: 'events',     icon: '📅', label: 'Festival Artwork' },
       { id: 'sponsors',   icon: '💼', label: 'Sponsorships'     },
       { id: 'categories', icon: '🏷️', label: 'Categories'       },
     ],
@@ -48,9 +64,10 @@ interface SidebarProps {
   onTabChange: (tab: string) => void;
   onLogout: () => void;
   userEmail?: string;
+  communityOnly?: boolean;
 }
 
-export default function Sidebar({ activeTab, onTabChange, onLogout, userEmail }: SidebarProps) {
+export default function Sidebar({ activeTab, onTabChange, onLogout, userEmail, communityOnly }: SidebarProps) {
   const [openGroups, setOpenGroups] = useState<string[]>(['stories']);
 
   // Opening a tab always reveals its section
@@ -75,7 +92,7 @@ export default function Sidebar({ activeTab, onTabChange, onLogout, userEmail }:
       </div>
 
       <nav className="sidebar-nav">
-        {NAV_GROUPS.map(group => {
+        {(communityOnly ? [{ id: 'contributor', icon: '📝', label: 'Editorial', children: [{ id: 'contributions', icon: '📥', label: 'My contributions' }] }] : NAV_GROUPS).map(group => {
           const isOpen = openGroups.includes(group.id);
           return (
             <div key={group.id} className={`nav-group ${isOpen ? 'open' : ''}`}>

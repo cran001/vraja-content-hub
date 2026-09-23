@@ -1,0 +1,136 @@
+{
+  "synthetic": true,
+  "description": "Disposable route responses. Never import as devotional content.",
+  "items": [
+    {
+      "file": "categories-empty.json",
+      "schema": "CategoryList",
+      "status": 200
+    },
+    {
+      "file": "category-tree.json",
+      "schema": "CategoryList",
+      "status": 200
+    },
+    {
+      "file": "wallpapers.json",
+      "schema": "MediaList",
+      "status": 200
+    },
+    {
+      "file": "category-inactive-subtree.json",
+      "schema": "CategoryList",
+      "status": 200
+    },
+    {
+      "file": "scripture-catalogue.json",
+      "schema": "ScriptureCatalogue",
+      "status": 200
+    },
+    {
+      "file": "scripture-body.json",
+      "schema": "VerseList",
+      "status": 200
+    },
+    {
+      "file": "daily-en-scheduled-correction.json",
+      "schema": "DailyVerse",
+      "status": 200
+    },
+    {
+      "file": "daily-hi-regional-fallback.json",
+      "schema": "DailyVerse",
+      "status": 200
+    },
+    {
+      "file": "daily-mr-english-fallback.json",
+      "schema": "DailyVerse",
+      "status": 200
+    },
+    {
+      "file": "events-timing-withheld.json",
+      "schema": "DatedEventList",
+      "status": 200
+    },
+    {
+      "file": "events-parana-window-and-after.json",
+      "schema": "DatedEventList",
+      "status": 200
+    },
+    {
+      "file": "story-feed-english-fallback.json",
+      "schema": "StoryFeed",
+      "status": 200
+    },
+    {
+      "file": "story-detail.json",
+      "schema": "StoryDetail",
+      "status": 200
+    },
+    {
+      "file": "quote-fallback.json",
+      "schema": "Quote",
+      "status": 200
+    },
+    {
+      "file": "darshan-empty.json",
+      "schema": "MediaEnvelope",
+      "status": 200
+    },
+    {
+      "file": "festival-art-empty.json",
+      "schema": "MediaEnvelope",
+      "status": 200
+    },
+    {
+      "file": "sponsors-empty.json",
+      "schema": "MediaList",
+      "status": 200
+    },
+    {
+      "file": "books-empty.json",
+      "schema": "BookList",
+      "status": 200
+    },
+    {
+      "file": "stories-empty.json",
+      "schema": "StoryFeed",
+      "status": 200
+    },
+    {
+      "file": "capabilities.json",
+      "schema": "Capabilities",
+      "status": 200
+    },
+    {
+      "file": "invalid-request.json",
+      "schema": "Error",
+      "status": 400
+    },
+    {
+      "file": "quote-unavailable.json",
+      "schema": "Error",
+      "status": 404
+    },
+    {
+      "file": "scripture-two-cantos.json",
+      "schema": "VerseList",
+      "status": 200
+    },
+    {
+      "file": "scripture-two-cantos-catalogue.json",
+      "schema": "ScriptureCatalogue",
+      "status": 200
+    },
+    {
+      "file": "server-failure.json",
+      "schema": "Error",
+      "status": 500
+    },
+    {
+      "file": "stale-snapshot.json",
+      "schema": "Error",
+      "status": 409
+    }
+  ]
+}

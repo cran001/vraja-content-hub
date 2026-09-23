@@ -53,10 +53,10 @@ export default function GalleryTab() {
   useEffect(() => { fetchItems(); }, [fetchItems]);
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this item from Cloudinary and the database?')) return;
+    if (!confirm('Delete this media record and queue its asset for cleanup?')) return;
     setDeletingId(id);
     try {
-      const res = await fetch(`/api/admin/wallpapers?id=${id}`, {
+      const res = await fetch(`/api/admin/wallpapers?id=${id}&confirm=${id}`, {
         method: 'DELETE', headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error();

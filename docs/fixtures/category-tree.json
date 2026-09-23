@@ -1,0 +1,52 @@
+[
+  {
+    "id": "736ef43e-63e2-44da-aec3-6b7d2ddf20a1",
+    "name": "Empty",
+    "parent_id": null,
+    "is_active": true,
+    "editorial_is_active": true,
+    "sort_order": 0,
+    "is_selectable": true,
+    "active_wallpaper_count": 0
+  },
+  {
+    "id": "401fbcb0-1852-40c6-b733-df8f317a62c6",
+    "name": "Media test",
+    "parent_id": null,
+    "is_active": true,
+    "editorial_is_active": true,
+    "sort_order": 0,
+    "is_selectable": true,
+    "active_wallpaper_count": 0
+  },
+  {
+    "id": "156f4f12-a4ef-4922-87dd-d2c8edc1cd2a",
+    "name": "Root",
+    "parent_id": null,
+    "is_active": true,
+    "editorial_is_active": true,
+    "sort_order": 0,
+    "is_selectable": true,
+    "active_wallpaper_count": 1
+  },
+  {
+    "id": "c3041310-7ae2-4e0e-a538-c9673a43dcbd",
+    "name": "Middle",
+    "parent_id": "156f4f12-a4ef-4922-87dd-d2c8edc1cd2a",
+    "is_active": true,
+    "editorial_is_active": true,
+    "sort_order": 0,
+    "is_selectable": true,
+    "active_wallpaper_count": 1
+  },
+  {
+    "id": "2422f934-1cde-44bc-a07a-eca16987715e",
+    "name": "Leaf",
+    "parent_id": "c3041310-7ae2-4e0e-a538-c9673a43dcbd",
+    "is_active": true,
+    "editorial_is_active": true,
+    "sort_order": 0,
+    "is_selectable": true,
+    "active_wallpaper_count": 1
+  }
+]

@@ -1,5 +1,7 @@
 "use client";
 
+import { uploadKey } from '@/lib/uploadKey';
+
 import { useState, useRef, ChangeEvent, useEffect, useCallback } from 'react';
 import { useToast } from '@/context/ToastContext';
 
@@ -53,7 +55,7 @@ export default function SponsorManager() {
     fd.append('is_sponsor', 'true');
     try {
       const res = await fetch('/api/admin/wallpapers', {
-        method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd,
+        method: 'POST', headers: { 'Idempotency-Key': uploadKey(file, fd), Authorization: `Bearer ${token}` }, body: fd,
       });
       if (!res.ok) throw new Error();
       showToast('Sponsor uploaded!');
@@ -82,7 +84,7 @@ export default function SponsorManager() {
     if (!confirm('Delete this sponsor banner?')) return;
     setDeletingId(id);
     try {
-      const res = await fetch(`/api/admin/wallpapers?id=${id}`, {
+      const res = await fetch(`/api/admin/wallpapers?id=${id}&confirm=${id}`, {
         method: 'DELETE', headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error();

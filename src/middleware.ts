@@ -20,14 +20,14 @@ export async function middleware(request: NextRequest) {
   const secret = new TextEncoder().encode(secretString);
 
   try {
-    const { payload } = await jwtVerify(token, secret);
+    await jwtVerify(token, secret, { algorithms: ['HS256'] });
 
     // Inject user context into headers so downstream route handlers
     // can read author identity without re-decoding the token.
     const requestHeaders = new Headers(request.headers);
-    requestHeaders.set('x-user-id',   String(payload.userId ?? ''));
-    requestHeaders.set('x-user-role', String(payload.role   ?? 'super_admin'));
-    requestHeaders.set('x-user-email', String(payload.email ?? ''));
+    requestHeaders.delete('x-user-id');
+    requestHeaders.delete('x-user-role');
+    requestHeaders.delete('x-user-email');
 
     return NextResponse.next({ request: { headers: requestHeaders } });
   } catch {

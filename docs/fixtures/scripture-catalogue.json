@@ -1,0 +1,18 @@
+[
+  {
+    "id": "test_scripture",
+    "title": "Test scripture",
+    "source": "Synthetic test source",
+    "edition": null,
+    "version": 6,
+    "hasCantos": false,
+    "sourceUrl": null,
+    "provenance": "Synthetic test fixture; not scripture for publication.",
+    "translator": null,
+    "verseCount": 2,
+    "contentHash": "bc4b6b4d1923b8f6fccad65f6206db004acf0be52a5b38c9f74181d9de97ad86",
+    "downloadUrl": "/api/v1/scriptures/test_scripture?version=6&hash=bc4b6b4d1923b8f6fccad65f6206db004acf0be52a5b38c9f74181d9de97ad86",
+    "rightsStatus": "original",
+    "hashAlgorithm": "sha256-json-utf8"
+  }
+]

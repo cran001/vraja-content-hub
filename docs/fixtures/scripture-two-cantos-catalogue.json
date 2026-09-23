@@ -1,0 +1,18 @@
+[
+  {
+    "id": "concurrency_fixture",
+    "title": "Concurrent fixture",
+    "source": null,
+    "edition": null,
+    "version": 4,
+    "hasCantos": true,
+    "sourceUrl": null,
+    "provenance": null,
+    "translator": null,
+    "verseCount": 2,
+    "contentHash": "5b96d763f65f9600178406858a516eb78914cc41542230578c62aeef56dcf542",
+    "downloadUrl": "/api/v1/scriptures/concurrency_fixture?version=4&hash=5b96d763f65f9600178406858a516eb78914cc41542230578c62aeef56dcf542",
+    "rightsStatus": "unknown",
+    "hashAlgorithm": "sha256-json-utf8"
+  }
+]

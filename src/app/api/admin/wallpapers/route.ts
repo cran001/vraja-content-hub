@@ -1,27 +1,9 @@
+import { uploadMedia } from '@/lib/mediaUpload';
+import { validateMediaPatch } from '@/lib/media';
+import { ApiError, failure, uuid,pageNumber } from '@/lib/api';
+import { withAdmin } from '@/lib/admin';
 import { NextResponse, NextRequest } from 'next/server';
-import { v2 as cloudinary } from 'cloudinary';
 import { query } from '@/lib/db';
-
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key:    process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-  secure: true,
-});
-
-// Helper: upload one file buffer to Cloudinary and return URLs
-async function uploadToCloudinary(
-  buffer: Buffer,
-  mimeType: string,
-  folder: string
-): Promise<{ public_id: string; secure_url: string; thumbnail_url: string }> {
-  const dataUri = `data:${mimeType};base64,${buffer.toString('base64')}`;
-  const upload = await cloudinary.uploader.upload(dataUri, { folder });
-  const thumbnail_url = cloudinary.url(upload.public_id, {
-    width: 400, height: 300, crop: 'fill',
-  });
-  return { public_id: upload.public_id, secure_url: upload.secure_url, thumbnail_url };
-}
 
 // ─────────────────────────────────────────────────────────────
 // POST /api/admin/wallpapers — single OR bulk upload
@@ -35,89 +17,25 @@ async function uploadToCloudinary(
 //   expires_on            — YYYY-MM-DD (optional)
 //   is_sponsor            — "true" | "false"
 // ─────────────────────────────────────────────────────────────
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   try {
-    const authorId  = req.headers.get('x-user-id') ?? null;
-    const formData  = await req.formData();
-
-    const name         = (formData.get('name')         as string) ?? 'Untitled';
-    const title        = (formData.get('title')        as string) ?? null;
-    const contentType  = (formData.get('content_type') as string) ?? 'wallpaper';
-    const categoryId   = (formData.get('category_id')  as string) ?? null;
-    const visibleDate  = (formData.get('visible_date') as string) ?? null;
-    const expiresOn    = (formData.get('expires_on')   as string) ?? null;
-    const isSponsor    = formData.get('is_sponsor') === 'true';
-
-    // Collect all image_* entries (supports bulk)
-    const files: File[] = Array.from(formData.entries())
-      .filter(([key, value]) => key.startsWith('image') && value instanceof File)
-      .map(([, value]) => value as File);
-
-    if (files.length === 0) {
-      return NextResponse.json({ message: 'At least one image is required.' }, { status: 400 });
-    }
-
-    const folder = isSponsor ? 'vraja-realm-sponsors' : `vraja-realm-${contentType}`;
-    const inserted = [];
-
-    for (let i = 0; i < files.length; i++) {
-      const file   = files[i];
-      const bytes  = await file.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-      const { public_id, secure_url, thumbnail_url } = await uploadToCloudinary(
-        buffer, file.type, folder
-      );
-
-      // Auto-number when bulk uploading
-      const itemName = files.length > 1 ? `${name} ${i + 1}` : name;
-
-      const { rows } = await query(
-        `INSERT INTO wallpapers
-           (name, title, content_type, category_id, public_id, original_url,
-            thumbnail_url, visible_date, expires_on, is_sponsor, author_id)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
-         RETURNING *`,
-        [
-          itemName, title, contentType,
-          categoryId  || null,
-          public_id, secure_url, thumbnail_url,
-          visibleDate || null,
-          expiresOn   || null,
-          isSponsor, authorId
-        ]
-      );
-      inserted.push(rows[0]);
-    }
-
-    return NextResponse.json(
-      { message: `${inserted.length} image(s) uploaded successfully.`, items: inserted },
-      { status: 201 }
-    );
-  } catch (error) {
-    console.error('Upload error:', error);
-    return NextResponse.json({ message: 'An internal server error occurred.' }, { status: 500 });
-  }
+    return NextResponse.json(await uploadMedia(await req.formData(), req.headers.get('x-user-id')!, req.headers.get('Idempotency-Key') ?? ''), { status: 201 });
+  } catch (error) { return failure(error); }
 }
 
 // ─────────────────────────────────────────────────────────────
 // DELETE /api/admin/wallpapers?id=<uuid>
 // ─────────────────────────────────────────────────────────────
-export async function DELETE(req: NextRequest) {
+async function handleDELETE(req: NextRequest) {
   try {
-    const id = req.nextUrl.searchParams.get('id');
-    if (!id) return NextResponse.json({ message: 'ID is required.' }, { status: 400 });
-
-    const find = await query('SELECT public_id FROM wallpapers WHERE id = $1', [id]);
-    if (find.rows.length === 0) return NextResponse.json({ message: 'Not found.' }, { status: 404 });
-
-    await cloudinary.uploader.destroy(find.rows[0].public_id);
-    await query('DELETE FROM wallpapers WHERE id = $1', [id]);
-
-    return NextResponse.json({ message: 'Deleted successfully.' }, { status: 200 });
-  } catch (error) {
-    console.error('Delete error:', error);
-    return NextResponse.json({ message: 'An internal server error occurred.' }, { status: 500 });
-  }
+    const id = uuid(req.nextUrl.searchParams.get('id'));
+    const row = (await query('SELECT id,public_id,name,publication_state FROM wallpapers WHERE id=$1 FOR UPDATE',[id])).rows[0];
+    if (!row) throw new ApiError(404, 'Not found.');
+    if (req.nextUrl.searchParams.get('confirm') !== id) throw new ApiError(409, 'Confirm the exact media id after reviewing it.', { item: row });
+    await query("INSERT INTO media_cleanup(public_id,reason) VALUES ($1,'media_deleted') ON CONFLICT DO NOTHING",[row.public_id]);
+    await query('DELETE FROM wallpapers WHERE id=$1',[id]);
+    return NextResponse.json({ message: 'Media removed; asset cleanup queued.', cleanup_pending: true });
+  } catch (error) { return failure(error); }
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -125,52 +43,30 @@ export async function DELETE(req: NextRequest) {
 // Body: { id, name, title, content_type, category_id,
 //         visible_date, expires_on, is_sponsor, is_active }
 // ─────────────────────────────────────────────────────────────
-export async function PUT(req: NextRequest) {
+async function handlePUT(req: NextRequest) {
   try {
-    const {
-      id, name, title, content_type, category_id,
-      visible_date, expires_on, is_sponsor, is_active,
-    } = await req.json();
-
-    if (!id) return NextResponse.json({ message: 'ID is required.' }, { status: 400 });
-
-    const { rows } = await query(
-      `UPDATE wallpapers
-       SET name=COALESCE($1,name), title=COALESCE($2,title),
-           content_type=COALESCE($3,content_type),
-           category_id=$4, visible_date=$5, expires_on=$6,
-           is_sponsor=COALESCE($7,is_sponsor),
-           is_active=COALESCE($8,is_active),
-           updated_at=current_timestamp
-       WHERE id=$9
-       RETURNING *`,
-      [
-        name ?? null, title ?? null, content_type ?? null,
-        category_id  ?? null, visible_date ?? null, expires_on ?? null,
-        is_sponsor !== undefined ? is_sponsor : null,
-        is_active  !== undefined ? is_active  : null,
-        id
-      ]
-    );
-
-    if (rows.length === 0) return NextResponse.json({ message: 'Not found.' }, { status: 404 });
-    return NextResponse.json(rows[0], { status: 200 });
-  } catch (error) {
-    console.error('Update error:', error);
-    return NextResponse.json({ message: 'An internal server error occurred.' }, { status: 500 });
-  }
+    const body = await req.json();
+    const id = uuid(body.id);
+    const existing = (await query("SELECT *,to_char(visible_date,'YYYY-MM-DD') AS visible_date,to_char(expires_on,'YYYY-MM-DD') AS expires_on FROM wallpapers WHERE id=$1 FOR UPDATE", [id])).rows[0];
+    if (!existing) throw new ApiError(404, 'Not found.');
+    const patch = await validateMediaPatch(body, existing);
+    const fields = Object.keys(patch);
+    if (!fields.length) return NextResponse.json(existing);
+    const result = await query(`UPDATE wallpapers SET ${fields.map((field,i) => field+'=$'+(i+1)).join(',')},updated_at=now() WHERE id=$${fields.length+1} RETURNING *`, [...Object.values(patch),id]);
+    return NextResponse.json(result.rows[0]);
+  } catch (error) { return failure(error); }
 }
 
 // ─────────────────────────────────────────────────────────────
 // GET /api/admin/wallpapers  — paginated list for the dashboard
 // Optional params: content_type, page (default 1), limit (default 50)
 // ─────────────────────────────────────────────────────────────
-export async function GET(req: NextRequest) {
+async function handleGET(req: NextRequest) {
   try {
     const { searchParams } = req.nextUrl;
     const contentType = searchParams.get('content_type');
-    const page  = Math.max(1, parseInt(searchParams.get('page')  ?? '1', 10));
-    const limit = Math.min(100, parseInt(searchParams.get('limit') ?? '50', 10));
+    const page = pageNumber(searchParams.get('page'),1);
+    const limit = pageNumber(searchParams.get('limit'),50,100);
     const offset = (page - 1) * limit;
 
     const params: (string | number)[] = [];
@@ -192,7 +88,10 @@ export async function GET(req: NextRequest) {
     const { rows } = await query(sql, params);
     return NextResponse.json({ page, limit, items: rows }, { status: 200 });
   } catch (error) {
-    console.error('Fetch error:', error);
-    return NextResponse.json({ message: 'Internal server error.' }, { status: 500 });
+    return failure(error);
   }
 }
+export const POST = withAdmin(handlePOST, false, false);
+export const DELETE = withAdmin(handleDELETE);
+export const PUT = withAdmin(handlePUT);
+export const GET = withAdmin(handleGET);

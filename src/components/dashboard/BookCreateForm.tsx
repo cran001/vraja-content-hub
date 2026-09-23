@@ -1,6 +1,8 @@
+/* eslint-disable @next/next/no-img-element -- CMS previews use local blob URLs and uploaded asset URLs without an image proxy. */
 "use client";
 
 import { useState } from 'react';
+import { uploadKey } from '@/lib/uploadKey';
 import { useToast } from '@/context/ToastContext';
 
 interface BookCreateFormProps {
@@ -38,7 +40,7 @@ export default function BookCreateForm({ onCreated }: BookCreateFormProps) {
 
       const res = await fetch('/api/admin/books', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` },
+        headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}`, 'Idempotency-Key': cover ? uploadKey(cover,fd) : crypto.randomUUID() },
         body: fd,
       });
       if (!res.ok) {

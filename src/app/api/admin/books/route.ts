@@ -1,161 +1,46 @@
-import { NextResponse, NextRequest } from 'next/server';
-import { v2 as cloudinary } from 'cloudinary';
+import { NextRequest, NextResponse } from 'next/server';
+import { withAdmin } from '@/lib/admin';
 import { query } from '@/lib/db';
+import { assetBatch } from '@/lib/mediaUpload';
+import { ApiError, failure, uuid } from '@/lib/api';
+import { contentText,contentInteger,contentPatch } from '@/lib/contentFields';
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key:    process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-  secure: true,
+export const GET=withAdmin(async()=>NextResponse.json({items:(await query('SELECT b.*,(SELECT count(*)::int FROM book_pages p WHERE p.book_id=b.id) AS page_count FROM books b ORDER BY sort_order,created_at DESC')).rows}));
+export const POST=withAdmin(async(req:NextRequest)=>{
+  try {
+    const form=await req.formData();
+    const title=contentText(form.get('title'),'title',255,true);
+    const description=contentText(form.get('description'),'description');
+    const order=contentInteger(form.get('sort_order'),'sort_order');
+    const files=Array.from(form.values()).filter(v=>v instanceof File && v.size>0) as File[];
+    if(files.length>1)throw new ApiError(400,'A book has at most one cover image.');
+    const actor=req.headers.get('x-user-id')!;
+    const result=await assetBatch(files,{type:'book',title,description,order},actor,req.headers.get('Idempotency-Key')??'',async(assets)=>{
+      const cover=assets[0];
+      return (await query('INSERT INTO books(title,description,sort_order,cover_public_id,cover_url,author_id) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *,0 AS page_count',[title,description,order,cover?.public_id??null,cover?.original_url??null,actor])).rows[0];
+    });
+    return NextResponse.json(result,{status:201});
+  }catch(error){return failure(error);}
+},false,false);
+export const PUT=withAdmin(async(req:NextRequest)=>{
+  try{
+    const body=await req.json();const id=uuid(body.id);
+    const patch=contentPatch(body,['description'],['title'],['is_active'],['sort_order']);
+    const fields=Object.keys(patch);
+    const result=fields.length?await query(`UPDATE books SET ${fields.map((f,i)=>f+'=$'+(i+1)).join(',')},updated_at=now() WHERE id=$${fields.length+1} RETURNING *`,[...Object.values(patch),id]):await query('SELECT * FROM books WHERE id=$1',[id]);
+    if(!result.rows.length)throw new ApiError(404,'Book not found.');
+    return NextResponse.json(result.rows[0]);
+  }catch(error){return failure(error);}
 });
-
-// Helper: upload one file buffer to Cloudinary and return URLs
-async function uploadToCloudinary(
-  buffer: Buffer,
-  mimeType: string,
-  folder: string
-): Promise<{ public_id: string; secure_url: string }> {
-  const dataUri = `data:${mimeType};base64,${buffer.toString('base64')}`;
-  const upload = await cloudinary.uploader.upload(dataUri, { folder });
-  return { public_id: upload.public_id, secure_url: upload.secure_url };
-}
-
-// ─────────────────────────────────────────────────────────────
-// GET /api/admin/books — list all books with page counts
-// ─────────────────────────────────────────────────────────────
-export async function GET() {
-  try {
-    const { rows } = await query(
-      `SELECT b.*,
-              (SELECT COUNT(*)::int FROM book_pages p WHERE p.book_id = b.id) AS page_count
-       FROM books b
-       ORDER BY b.sort_order ASC, b.created_at DESC`
-    );
-    return NextResponse.json({ items: rows }, { status: 200 });
-  } catch (error) {
-    console.error('Fetch books error:', error);
-    return NextResponse.json({ message: 'Internal server error.' }, { status: 500 });
-  }
-}
-
-// ─────────────────────────────────────────────────────────────
-// POST /api/admin/books — create a book
-// FormData fields:
-//   title        — required
-//   description  — optional
-//   sort_order   — optional integer (default 0)
-//   cover        — optional image file
-// ─────────────────────────────────────────────────────────────
-export async function POST(req: NextRequest) {
-  try {
-    const authorId = req.headers.get('x-user-id') ?? null;
-    const formData = await req.formData();
-
-    const title       = ((formData.get('title') as string) ?? '').trim();
-    const description = (formData.get('description') as string) ?? null;
-    const sortOrderRaw = formData.get('sort_order') as string | null;
-    const sortOrder   = sortOrderRaw !== null && sortOrderRaw !== '' ? parseInt(sortOrderRaw, 10) || 0 : 0;
-
-    if (!title) {
-      return NextResponse.json({ message: 'Book title is required.' }, { status: 400 });
-    }
-
-    // Cover is optional; accept the file under 'cover' or any image_* key
-    const coverEntry = formData.entries().find(
-      ([key, value]) => (key === 'cover' || key.startsWith('image')) && value instanceof File
-    );
-    const coverFile = coverEntry ? (coverEntry[1] as File) : null;
-
-    let coverPublicId: string | null = null;
-    let coverUrl: string | null = null;
-    if (coverFile && coverFile.size > 0) {
-      const bytes  = Buffer.from(await coverFile.arrayBuffer());
-      const uploaded = await uploadToCloudinary(bytes, coverFile.type, 'vraja-realm-books');
-      coverPublicId = uploaded.public_id;
-      coverUrl      = uploaded.secure_url;
-    }
-
-    const { rows } = await query(
-      `INSERT INTO books (title, description, cover_public_id, cover_url, sort_order, author_id)
-       VALUES ($1,$2,$3,$4,$5,$6)
-       RETURNING *,
-                 (SELECT COUNT(*)::int FROM book_pages p WHERE p.book_id = books.id) AS page_count`,
-      [title, description || null, coverPublicId, coverUrl, sortOrder, authorId]
-    );
-
-    return NextResponse.json(rows[0], { status: 201 });
-  } catch (error) {
-    console.error('Create book error:', error);
-    return NextResponse.json({ message: 'An internal server error occurred.' }, { status: 500 });
-  }
-}
-
-// ─────────────────────────────────────────────────────────────
-// PUT /api/admin/books — update book metadata
-// Body: { id, title?, description?, sort_order?, is_active? }
-// ─────────────────────────────────────────────────────────────
-export async function PUT(req: NextRequest) {
-  try {
-    const { id, title, description, sort_order, is_active } = await req.json();
-    if (!id) return NextResponse.json({ message: 'ID is required.' }, { status: 400 });
-
-    const { rows } = await query(
-      `UPDATE books
-       SET title=COALESCE($1,title),
-           description=COALESCE($2,description),
-           sort_order=COALESCE($3,sort_order),
-           is_active=COALESCE($4,is_active),
-           updated_at=current_timestamp
-       WHERE id=$5
-       RETURNING *,
-                 (SELECT COUNT(*)::int FROM book_pages p WHERE p.book_id = books.id) AS page_count`,
-      [
-        title       ?? null,
-        description ?? null,
-        sort_order  ?? null,
-        is_active !== undefined ? is_active : null,
-        id,
-      ]
-    );
-
-    if (rows.length === 0) return NextResponse.json({ message: 'Not found.' }, { status: 404 });
-    return NextResponse.json(rows[0], { status: 200 });
-  } catch (error) {
-    console.error('Update book error:', error);
-    return NextResponse.json({ message: 'An internal server error occurred.' }, { status: 500 });
-  }
-}
-
-// ─────────────────────────────────────────────────────────────
-// DELETE /api/admin/books?id=<uuid>
-// Removes the book, its pages (cascade) and all Cloudinary assets.
-// ─────────────────────────────────────────────────────────────
-export async function DELETE(req: NextRequest) {
-  try {
-    const id = req.nextUrl.searchParams.get('id');
-    if (!id) return NextResponse.json({ message: 'ID is required.' }, { status: 400 });
-
-    const find = await query('SELECT id FROM books WHERE id = $1', [id]);
-    if (find.rows.length === 0) return NextResponse.json({ message: 'Not found.' }, { status: 404 });
-
-    // Collect every Cloudinary asset (cover + all page images) before the rows vanish
-    const assets = await query(
-      `SELECT public_id FROM book_pages WHERE book_id = $1
-       UNION ALL
-       SELECT cover_public_id FROM books WHERE id = $1 AND cover_public_id IS NOT NULL`,
-      [id]
-    );
-
-    await Promise.all(
-      assets.rows.map((row: { public_id: string }) =>
-        cloudinary.uploader.destroy(row.public_id).catch(() => null)
-      )
-    );
-
-    await query('DELETE FROM books WHERE id = $1', [id]);
-    return NextResponse.json({ message: 'Deleted successfully.' }, { status: 200 });
-  } catch (error) {
-    console.error('Delete book error:', error);
-    return NextResponse.json({ message: 'An internal server error occurred.' }, { status: 500 });
-  }
-}
+export const DELETE=withAdmin(async(req:NextRequest)=>{
+  try{
+    const id=uuid(req.nextUrl.searchParams.get('id'));
+    const book=(await query('SELECT * FROM books WHERE id=$1 FOR UPDATE',[id])).rows[0];
+    if(!book)throw new ApiError(404,'Book not found.');
+    const pages=(await query('SELECT id,title,page_number FROM book_pages WHERE book_id=$1 ORDER BY page_number',[id])).rows;
+    if(pages.length || book.is_story || req.nextUrl.searchParams.get('confirm')!==id)throw new ApiError(409,'Archive story books. Delete pages explicitly before deleting an empty book.',{id,title:book.title,is_story:book.is_story,pages});
+    if(book.cover_public_id)await query("INSERT INTO media_cleanup(public_id,reason) VALUES ($1,'book_deleted') ON CONFLICT DO NOTHING",[book.cover_public_id]);
+    await query('DELETE FROM books WHERE id=$1',[id]);
+    return NextResponse.json({message:'Empty book deleted; asset cleanup queued.'});
+  }catch(error){return failure(error);}
+});

@@ -1,7 +1,9 @@
+import { withAdmin } from '@/lib/admin';
 import { NextResponse } from 'next/server';
 
-export async function GET() {
+async function handleGET() {
   return NextResponse.json({ 
     message: "Success! You have accessed a protected route." 
   });
 }
+export const GET = withAdmin(handleGET);

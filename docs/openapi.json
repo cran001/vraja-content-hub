@@ -1,0 +1,3598 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Vraja Content Hub public contracts and critical editorial mutations",
+    "version": "1.1.0",
+    "description": "Local implementation. Additive v1 fields. No deployment or Android integration claim. Complete admin workflow in API-CONTRACT.md."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Local. Verify the approved staging/production hostname before use."
+    }
+  ],
+  "paths": {
+    "/api/v1/wallpaper-categories": {
+      "get": {
+        "summary": "Complete ancestor tree, including inactive and empty nodes. Pagination rejected.",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "description": "India day. Default today in Asia/Kolkata.",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful validated response. Only complete scope reconciliation can withdraw cached server-owned content.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No eligible item or detail unavailable. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version or snapshot changed. Refresh and retry. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Request failed. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency or schema unavailable. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/wallpapers": {
+      "get": {
+        "summary": "Legacy full wallpaper array. Other types require an explicit filter.",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "description": "India day. Default today in Asia/Kolkata.",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "category_id",
+            "in": "query",
+            "required": false,
+            "description": "Complete subtree; cannot combine with category.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "description": "Legacy exact name or slug. Unknown is empty; ambiguous is 400.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "Omit both page and limit for the complete legacy list.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10000
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 500
+            }
+          },
+          {
+            "name": "content_type",
+            "in": "query",
+            "required": false,
+            "description": "",
+            "schema": {
+              "enum": [
+                "wallpaper",
+                "darshan",
+                "event",
+                "sponsor"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful validated response. Only complete scope reconciliation can withdraw cached server-owned content.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No eligible item or detail unavailable. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version or snapshot changed. Refresh and retry. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Request failed. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency or schema unavailable. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/darshan": {
+      "get": {
+        "summary": "Artwork on its exact India date.",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "description": "India day. Default today in Asia/Kolkata.",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "category_id",
+            "in": "query",
+            "required": false,
+            "description": "Complete subtree; cannot combine with category.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "description": "Legacy exact name or slug. Unknown is empty; ambiguous is 400.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "Omit both page and limit for the complete legacy list.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10000
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 500
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful validated response. Only complete scope reconciliation can withdraw cached server-owned content.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No eligible item or detail unavailable. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version or snapshot changed. Refresh and retry. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Request failed. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency or schema unavailable. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/events": {
+      "get": {
+        "summary": "Festival artwork, separate from dated calendar data.",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "description": "India day. Default today in Asia/Kolkata.",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "category_id",
+            "in": "query",
+            "required": false,
+            "description": "Complete subtree; cannot combine with category.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "description": "Legacy exact name or slug. Unknown is empty; ambiguous is 400.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "Omit both page and limit for the complete legacy list.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10000
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 500
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful validated response. Only complete scope reconciliation can withdraw cached server-owned content.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No eligible item or detail unavailable. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version or snapshot changed. Refresh and retry. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Request failed. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency or schema unavailable. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sponsors": {
+      "get": {
+        "summary": "Explicit sponsor placements.",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "description": "India day. Default today in Asia/Kolkata.",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "category_id",
+            "in": "query",
+            "required": false,
+            "description": "Complete subtree; cannot combine with category.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "description": "Legacy exact name or slug. Unknown is empty; ambiguous is 400.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "Omit both page and limit for the complete legacy list.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10000
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 500
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful validated response. Only complete scope reconciliation can withdraw cached server-owned content.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No eligible item or detail unavailable. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version or snapshot changed. Refresh and retry. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Request failed. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency or schema unavailable. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/daily-verse": {
+      "get": {
+        "summary": "Eligible scripture curation; fixed current-day assignment with reviewed correction.",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "description": "",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "locale",
+            "in": "query",
+            "required": false,
+            "description": "Requested, base-language, then English fallback.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful validated response. Only complete scope reconciliation can withdraw cached server-owned content.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DailyVerse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No eligible item or detail unavailable. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version or snapshot changed. Refresh and retry. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Request failed. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency or schema unavailable. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/events/dated": {
+      "get": {
+        "summary": "Scoped calendar range. Unscoped clock times withheld.",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "description": "Inclusive; defaults to today in India.",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "description": "Inclusive; at most 800 days after from.",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "locale",
+            "in": "query",
+            "required": false,
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "location",
+            "in": "query",
+            "required": false,
+            "description": "Exact agreed scope key. Clock times require matching location and IANA timezone.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "timezone",
+            "in": "query",
+            "required": false,
+            "description": "Exact agreed scope key. Clock times require matching location and IANA timezone.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "region",
+            "in": "query",
+            "required": false,
+            "description": "Exact agreed scope key. Clock times require matching location and IANA timezone.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tradition",
+            "in": "query",
+            "required": false,
+            "description": "Exact agreed scope key. Clock times require matching location and IANA timezone.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful validated response. Only complete scope reconciliation can withdraw cached server-owned content.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DatedEventList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No eligible item or detail unavailable. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version or snapshot changed. Refresh and retry. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Request failed. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency or schema unavailable. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scriptures": {
+      "get": {
+        "summary": "Complete published nonempty scripture catalogue.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful validated response. Only complete scope reconciliation can withdraw cached server-owned content.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScriptureCatalogue"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No eligible item or detail unavailable. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version or snapshot changed. Refresh and retry. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Request failed. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency or schema unavailable. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scriptures/{id}": {
+      "get": {
+        "summary": "Bare verse array. Verify SHA256 of exact uncompressed UTF8 response bytes.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Scripture slug",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "required": false,
+            "description": "",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "hash",
+            "in": "query",
+            "required": false,
+            "description": "",
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful validated response. Only complete scope reconciliation can withdraw cached server-owned content.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerseList"
+                }
+              }
+            },
+            "headers": {
+              "X-Scripture-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Describes the actual body; gzip only when negotiated."
+              },
+              "X-Content-SHA256": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Describes the actual body; gzip only when negotiated."
+              },
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Describes the actual body; gzip only when negotiated."
+              },
+              "Content-Encoding": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Describes the actual body; gzip only when negotiated."
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No eligible item or detail unavailable. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version or snapshot changed. Refresh and retry. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Request failed. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency or schema unavailable. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/books": {
+      "get": {
+        "summary": "Legacy books array or individual detail.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "description": "With id, returns one Book with pages.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful validated response. Only complete scope reconciliation can withdraw cached server-owned content.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/BookList"
+                    },
+                    {
+                      "allOf": [
+                        {
+                          "$ref": "#/components/schemas/Book"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "pages": {
+                              "type": "array",
+                              "items": {
+                                "$ref": "#/components/schemas/BookPage"
+                              }
+                            }
+                          },
+                          "required": [
+                            "pages"
+                          ],
+                          "additionalProperties": true
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No eligible item or detail unavailable. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version or snapshot changed. Refresh and retry. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Request failed. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency or schema unavailable. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/stories": {
+      "get": {
+        "summary": "Book-backed Katha feed; reconcile only after every page in one snapshot.",
+        "parameters": [
+          {
+            "name": "locale",
+            "in": "query",
+            "required": false,
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10000
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "snapshot",
+            "in": "query",
+            "required": false,
+            "description": "Required after page one. Keep language and page size fixed.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful validated response. Only complete scope reconciliation can withdraw cached server-owned content.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoryFeed"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No eligible item or detail unavailable. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version or snapshot changed. Refresh and retry. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Request failed. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency or schema unavailable. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/stories/{id}": {
+      "get": {
+        "summary": "Canonical narrative and related illustrated pages.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Story/book UUID",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "locale",
+            "in": "query",
+            "required": false,
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful validated response. Only complete scope reconciliation can withdraw cached server-owned content.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoryDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No eligible item or detail unavailable. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version or snapshot changed. Refresh and retry. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Request failed. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency or schema unavailable. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quotes/selection": {
+      "get": {
+        "summary": "Typed quote or original reflection. Android user visibility setting takes precedence.",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "description": "",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "locale",
+            "in": "query",
+            "required": false,
+            "description": "Requested, base-language, then English fallback.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful validated response. Only complete scope reconciliation can withdraw cached server-owned content.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Quote"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No eligible item or detail unavailable. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version or snapshot changed. Refresh and retry. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Request failed. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency or schema unavailable. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/capabilities": {
+      "get": {
+        "summary": "Non-sensitive schema capability and revision information; nonready returns 503.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful validated response. Only complete scope reconciliation can withdraw cached server-owned content.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Capabilities"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No eligible item or detail unavailable. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version or snapshot changed. Refresh and retry. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Request failed. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency or schema unavailable. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Capabilities"
+                    },
+                    {
+                      "$ref": "#/components/schemas/DependencyUnavailable"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/health": {
+      "get": {
+        "summary": "Non-sensitive schema capability and revision information; nonready returns 503.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful validated response. Only complete scope reconciliation can withdraw cached server-owned content.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Capabilities"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No eligible item or detail unavailable. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version or snapshot changed. Refresh and retry. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Request failed. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency or schema unavailable. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Capabilities"
+                    },
+                    {
+                      "$ref": "#/components/schemas/DependencyUnavailable"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/daily-preview": {
+      "get": {
+        "summary": "Admin diagnostics; detailed shapes in API-CONTRACT.md.",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "description": "",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "locale",
+            "in": "query",
+            "required": false,
+            "description": "Requested, base-language, then English fallback.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "coverage",
+            "in": "query",
+            "required": false,
+            "description": "",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful validated response. Only complete scope reconciliation can withdraw cached server-owned content.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication or role denied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authentication or role denied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No eligible item or detail unavailable. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version or snapshot changed. Refresh and retry. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Request failed. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency or schema unavailable. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/admin/calendar-preview": {
+      "get": {
+        "summary": "Admin diagnostics; detailed shapes in API-CONTRACT.md.",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "description": "Inclusive; defaults to today in India.",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "description": "Inclusive; at most 800 days after from.",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "locale",
+            "in": "query",
+            "required": false,
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "location",
+            "in": "query",
+            "required": false,
+            "description": "Exact agreed scope key. Clock times require matching location and IANA timezone.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "timezone",
+            "in": "query",
+            "required": false,
+            "description": "Exact agreed scope key. Clock times require matching location and IANA timezone.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "region",
+            "in": "query",
+            "required": false,
+            "description": "Exact agreed scope key. Clock times require matching location and IANA timezone.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tradition",
+            "in": "query",
+            "required": false,
+            "description": "Exact agreed scope key. Clock times require matching location and IANA timezone.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful validated response. Only complete scope reconciliation can withdraw cached server-owned content.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication or role denied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authentication or role denied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No eligible item or detail unavailable. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version or snapshot changed. Refresh and retry. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Request failed. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency or schema unavailable. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/admin/readiness": {
+      "get": {
+        "summary": "Admin diagnostics; detailed shapes in API-CONTRACT.md.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful validated response. Only complete scope reconciliation can withdraw cached server-owned content.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication or role denied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authentication or role denied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No eligible item or detail unavailable. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version or snapshot changed. Refresh and retry. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Request failed. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency or schema unavailable. Retain cached content and personal state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/admin/editorial": {
+      "put": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Trusted super_admin mutation, transactional and audited.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditorialMutation"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated record or import preview/result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Rejected; no mutation committed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Rejected; no mutation committed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Rejected; no mutation committed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Rejected; no mutation committed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Rejected; no mutation committed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Rejected; no mutation committed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Rejected; no mutation committed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/scripture-verses": {
+      "post": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Trusted super_admin mutation, transactional and audited.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScriptureImport"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated record or import preview/result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Rejected; no mutation committed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Rejected; no mutation committed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Rejected; no mutation committed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Rejected; no mutation committed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Rejected; no mutation committed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Rejected; no mutation committed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Rejected; no mutation committed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "details": {},
+          "retryable": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "additionalProperties": true
+      },
+      "Category": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "parent_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "active_wallpaper_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "is_selectable": {
+            "type": "boolean"
+          },
+          "sort_order": {
+            "type": "integer"
+          },
+          "editorial_is_active": {
+            "type": "boolean",
+            "description": "Own setting; is_active also includes all ancestors."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "parent_id",
+          "active_wallpaper_count",
+          "is_active",
+          "is_selectable",
+          "sort_order"
+        ],
+        "additionalProperties": true
+      },
+      "Media": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "deity": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "temple": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "location": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "credit": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "source_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "source_url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "translator": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "edition": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "provenance": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "alt_text": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "category_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "parent_category_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "parent_category_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "grandparent_category_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "content_type": {
+            "enum": [
+              "wallpaper",
+              "darshan",
+              "event",
+              "sponsor"
+            ]
+          },
+          "is_sponsor": {
+            "type": "boolean"
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "category_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "visible_date": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "expires_on": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "original_url": {
+            "type": "string"
+          },
+          "thumbnail_url": {
+            "type": "string"
+          },
+          "locale": {
+            "type": "string"
+          },
+          "rights_status": {
+            "enum": [
+              "unknown",
+              "original",
+              "licensed",
+              "public_domain"
+            ]
+          },
+          "image_width": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "image_height": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "crop": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "x": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "y": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "width": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "height": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              }
+            },
+            "required": [
+              "x",
+              "y",
+              "width",
+              "height"
+            ]
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "schedule_timezone": {
+            "const": "Asia/Kolkata"
+          },
+          "expiry_boundary": {
+            "const": "exclusive"
+          },
+          "placement_eligibility": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "content_type",
+          "is_sponsor",
+          "category_id",
+          "original_url",
+          "thumbnail_url",
+          "visible_date",
+          "expires_on",
+          "locale",
+          "rights_status",
+          "schedule_timezone",
+          "expiry_boundary",
+          "placement_eligibility"
+        ],
+        "additionalProperties": true
+      },
+      "MediaEnvelope": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "timezone": {
+            "const": "Asia/Kolkata"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Media"
+            }
+          }
+        },
+        "required": [
+          "date",
+          "timezone",
+          "items"
+        ],
+        "additionalProperties": true
+      },
+      "DailyVerse": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "sourceUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "translator": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "edition": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "provenance": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "rightsStatus": {
+            "enum": [
+              "unknown",
+              "original",
+              "licensed",
+              "public_domain"
+            ]
+          },
+          "locale": {
+            "type": "string"
+          },
+          "requestedLocale": {
+            "type": "string"
+          },
+          "languageFallback": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "scriptureId": {
+            "type": "string"
+          },
+          "scriptureTitle": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string"
+          },
+          "sanskrit": {
+            "type": "string"
+          },
+          "transliteration": {
+            "type": "string"
+          },
+          "translation": {
+            "type": "string"
+          },
+          "reflection": {
+            "type": "string"
+          },
+          "theme": {
+            "type": "string"
+          },
+          "translationLocale": {
+            "type": "string"
+          },
+          "canto": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "chapter": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "verse": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "scheduled": {
+            "type": "boolean"
+          },
+          "selectionMode": {
+            "enum": [
+              "scheduled",
+              "pool"
+            ]
+          },
+          "contentRevision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "assignmentRevision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "frozen": {
+            "type": "boolean"
+          },
+          "timezone": {
+            "const": "Asia/Kolkata"
+          },
+          "correctionReason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "date",
+          "scriptureId",
+          "reference",
+          "chapter",
+          "verse",
+          "sanskrit",
+          "transliteration",
+          "translation",
+          "reflection",
+          "theme",
+          "locale",
+          "requestedLocale",
+          "languageFallback",
+          "translationLocale",
+          "scheduled",
+          "selectionMode",
+          "assignmentRevision",
+          "contentRevision",
+          "frozen",
+          "timezone"
+        ],
+        "additionalProperties": true
+      },
+      "DatedEvent": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "sourceUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "translator": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "edition": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "provenance": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "rightsStatus": {
+            "enum": [
+              "unknown",
+              "original",
+              "licensed",
+              "public_domain"
+            ]
+          },
+          "locale": {
+            "type": "string"
+          },
+          "requestedLocale": {
+            "type": "string"
+          },
+          "languageFallback": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "titleHi": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "eventType": {
+            "type": "string"
+          },
+          "imageUrl": {
+            "type": "string"
+          },
+          "detailsUrl": {
+            "type": "string"
+          },
+          "fastingGuidelines": {
+            "type": "string"
+          },
+          "paranaStartTime": {
+            "type": "string"
+          },
+          "paranaEndTime": {
+            "type": "string"
+          },
+          "timeSlot": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "descriptionHi": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "isMajorEvent": {
+            "type": "boolean"
+          },
+          "paranaDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "paranaType": {
+            "const": "after"
+          },
+          "applicability": {
+            "enum": [
+              "global",
+              "tradition",
+              "region",
+              "location"
+            ]
+          },
+          "scopeKey": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "timing": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "location": {
+                "type": "string"
+              },
+              "timezone": {
+                "type": "string"
+              },
+              "source": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "location",
+              "timezone",
+              "source"
+            ]
+          },
+          "timingWithheld": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "date",
+          "description",
+          "eventType",
+          "isMajorEvent",
+          "locale",
+          "requestedLocale",
+          "languageFallback",
+          "applicability",
+          "scopeKey",
+          "timing",
+          "timingWithheld",
+          "revision"
+        ],
+        "additionalProperties": true
+      },
+      "Scripture": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "sourceUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "translator": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "edition": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "provenance": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "rightsStatus": {
+            "enum": [
+              "unknown",
+              "original",
+              "licensed",
+              "public_domain"
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "titleHi": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "colorHex": {
+            "type": "string"
+          },
+          "refPrefix": {
+            "type": "string"
+          },
+          "downloadUrl": {
+            "type": "string"
+          },
+          "hasCantos": {
+            "type": "boolean"
+          },
+          "verseCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "contentHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "hashAlgorithm": {
+            "const": "sha256-json-utf8"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "hasCantos",
+          "verseCount",
+          "version",
+          "contentHash",
+          "hashAlgorithm",
+          "downloadUrl"
+        ],
+        "additionalProperties": true
+      },
+      "Verse": {
+        "type": "object",
+        "properties": {
+          "sanskrit": {
+            "type": "string"
+          },
+          "iast": {
+            "type": "string"
+          },
+          "translation": {
+            "type": "string"
+          },
+          "chapter_title": {
+            "type": "string"
+          },
+          "purport": {
+            "type": "string"
+          },
+          "image_prompt": {
+            "type": "string"
+          },
+          "translation_locale": {
+            "type": "string"
+          },
+          "source": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "source_url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "translator": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "edition": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "provenance": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "rights_status": {
+            "enum": [
+              "unknown",
+              "original",
+              "licensed",
+              "public_domain"
+            ]
+          },
+          "canto": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "chapter": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "verse": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "word_for_word": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "word": {
+                  "type": "string"
+                },
+                "meaning": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "word",
+                "meaning"
+              ],
+              "additionalProperties": true
+            }
+          },
+          "puranic_story": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "chapter",
+          "verse",
+          "sanskrit",
+          "iast",
+          "translation",
+          "translation_locale",
+          "source",
+          "source_url",
+          "translator",
+          "edition",
+          "provenance",
+          "rights_status"
+        ],
+        "additionalProperties": true
+      },
+      "BookPage": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "page_number": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "title": {
+            "type": "string"
+          },
+          "body_text": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "image_url": {
+            "type": "string"
+          },
+          "thumbnail_url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "page_number",
+          "title",
+          "body_text",
+          "image_url",
+          "thumbnail_url"
+        ],
+        "additionalProperties": true
+      },
+      "Book": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cover_url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "sort_order": {
+            "type": "integer"
+          },
+          "page_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          },
+          "pages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BookPage"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "description",
+          "cover_url",
+          "sort_order",
+          "created_at",
+          "updated_at"
+        ],
+        "additionalProperties": true
+      },
+      "Story": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "sourceUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "translator": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "edition": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "provenance": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "rightsStatus": {
+            "enum": [
+              "unknown",
+              "original",
+              "licensed",
+              "public_domain"
+            ]
+          },
+          "locale": {
+            "type": "string"
+          },
+          "requestedLocale": {
+            "type": "string"
+          },
+          "languageFallback": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "bookId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "coverUrl": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "themes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "deities": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "scriptureReferences": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "readingMinutes": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "readingDurationEstimated": {
+            "const": true
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "publishedOn": {
+            "type": "string",
+            "format": "date"
+          },
+          "sortOrder": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "bookId",
+          "title",
+          "summary",
+          "coverUrl",
+          "locale",
+          "requestedLocale",
+          "languageFallback",
+          "themes",
+          "deities",
+          "scriptureReferences",
+          "readingMinutes",
+          "version",
+          "publishedOn",
+          "sortOrder"
+        ],
+        "additionalProperties": true
+      },
+      "Quote": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "sourceUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "translator": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "edition": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "provenance": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "rightsStatus": {
+            "enum": [
+              "unknown",
+              "original",
+              "licensed",
+              "public_domain"
+            ]
+          },
+          "locale": {
+            "type": "string"
+          },
+          "requestedLocale": {
+            "type": "string"
+          },
+          "languageFallback": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "text": {
+            "type": "string"
+          },
+          "attribution": {
+            "type": "string"
+          },
+          "theme": {
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "original_reflection",
+              "exact_quote",
+              "translated_scripture"
+            ]
+          },
+          "reference": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "verseId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "scheduled": {
+            "type": "boolean"
+          },
+          "timezone": {
+            "const": "Asia/Kolkata"
+          },
+          "lockScreenEligible": {
+            "type": "boolean"
+          },
+          "visibilityPolicy": {
+            "const": "android-user-setting"
+          }
+        },
+        "required": [
+          "id",
+          "date",
+          "text",
+          "kind",
+          "attribution",
+          "reference",
+          "verseId",
+          "theme",
+          "locale",
+          "requestedLocale",
+          "languageFallback",
+          "revision",
+          "scheduled",
+          "timezone",
+          "lockScreenEligible",
+          "visibilityPolicy"
+        ],
+        "additionalProperties": true
+      },
+      "Capabilities": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "enum": [
+              "ready",
+              "schema_incomplete"
+            ]
+          },
+          "apiVersion": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "string"
+          },
+          "capabilities": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "schemaReady": {
+            "type": "boolean"
+          },
+          "androidConsumerVerified": {
+            "const": false
+          }
+        },
+        "required": [
+          "status",
+          "apiVersion",
+          "revision",
+          "capabilities",
+          "schemaReady",
+          "androidConsumerVerified"
+        ],
+        "additionalProperties": true
+      },
+      "StoryDetail": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Story"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "body": {
+                "type": "string"
+              },
+              "pages": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/BookPage"
+                }
+              }
+            },
+            "required": [
+              "body",
+              "pages"
+            ],
+            "additionalProperties": true
+          }
+        ]
+      },
+      "StoryFeed": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Story"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "hasMore": {
+            "type": "boolean"
+          },
+          "snapshot": {
+            "type": "string"
+          },
+          "reconciliation": {
+            "const": "complete-only-after-all-pages"
+          }
+        },
+        "required": [
+          "items",
+          "page",
+          "limit",
+          "hasMore",
+          "snapshot",
+          "reconciliation"
+        ],
+        "additionalProperties": true
+      },
+      "CategoryList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Category"
+        }
+      },
+      "MediaList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Media"
+        }
+      },
+      "DatedEventList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/DatedEvent"
+        }
+      },
+      "ScriptureCatalogue": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Scripture"
+        }
+      },
+      "VerseList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Verse"
+        }
+      },
+      "BookList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Book"
+        }
+      },
+      "EditorialMutation": {
+        "type": "object",
+        "properties": {
+          "collection": {
+            "enum": [
+              "wallpapers",
+              "books",
+              "dated_events",
+              "scriptures",
+              "daily_verses",
+              "quotes"
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "action": {
+            "enum": [
+              "metadata",
+              "review",
+              "publish",
+              "unpublish",
+              "archive"
+            ]
+          },
+          "metadata": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "collection",
+          "id",
+          "expected_revision",
+          "action"
+        ],
+        "additionalProperties": true
+      },
+      "ScriptureImport": {
+        "type": "object",
+        "properties": {
+          "scripture_id": {
+            "type": "string"
+          },
+          "mode": {
+            "enum": [
+              "replace",
+              "append",
+              "merge"
+            ]
+          },
+          "expected_version": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "verses": {
+            "type": "array",
+            "maxItems": 20000,
+            "items": {
+              "type": "object",
+              "properties": {
+                "canto": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "chapter": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "verse": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "translation": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "chapter",
+                "verse",
+                "translation"
+              ],
+              "additionalProperties": true
+            }
+          },
+          "preview": {
+            "type": "boolean"
+          },
+          "reviewed_correction": {
+            "type": "boolean"
+          },
+          "removed_resolution": {
+            "enum": [
+              "retain",
+              "delete_unreferenced"
+            ]
+          },
+          "confirm_removed_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        "required": [
+          "scripture_id",
+          "verses"
+        ],
+        "additionalProperties": true
+      },
+      "DependencyUnavailable": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "const": "unavailable"
+          },
+          "schemaReady": {
+            "const": false
+          },
+          "capabilities": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "status",
+          "schemaReady",
+          "capabilities"
+        ]
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}

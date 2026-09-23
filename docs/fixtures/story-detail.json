@@ -1,0 +1,31 @@
+{
+  "id": "e49cfcd1-cb0a-4877-a910-4877fa4cae62",
+  "bookId": "e49cfcd1-cb0a-4877-a910-4877fa4cae62",
+  "title": "Synthetic story fixture",
+  "summary": "Synthetic summary.",
+  "body": "Synthetic story text for the route contract test.",
+  "locale": "en",
+  "requestedLocale": "en",
+  "languageFallback": false,
+  "coverUrl": "https://example.invalid/cover.png",
+  "themes": [
+    "Trust"
+  ],
+  "deities": [
+    "Krishna"
+  ],
+  "scriptureReferences": [
+    "Synthetic source reference; not a real scripture"
+  ],
+  "readingMinutes": 1,
+  "readingDurationEstimated": true,
+  "version": 4,
+  "publishedOn": "2026-09-11",
+  "sortOrder": 0,
+  "updatedAt": "2026-09-10T22:37:27.486Z",
+  "source": "Test fixture",
+  "sourceUrl": null,
+  "provenance": "Synthetic content solely for testing.",
+  "rightsStatus": "original",
+  "pages": []
+}

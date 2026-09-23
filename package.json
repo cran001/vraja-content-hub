@@ -6,9 +6,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint src scripts tests --max-warnings=0",
+    "typecheck": "tsc --noEmit --incremental false",
+    "test": "node scripts/test-disposable.mjs",
+    "test:contracts": "node scripts/verify-content-contracts.mts",
     "migrate": "dotenv -e .env -- node-pg-migrate",
-    "seed:admin": "dotenv -e .env -- node scripts/seed-admin.js"
+    "seed:admin": "dotenv -e .env -- node scripts/seed-admin.js",
+    "test:fixtures": "node scripts/verify-api-fixtures.mjs",
+    "test:http": "node scripts/test-disposable.mjs --http"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
@@ -31,10 +36,12 @@
     "@types/pg": "^8.15.4",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "ajv": "^6.15.0",
     "dotenv-cli": "^8.0.0",
     "eslint": "^9",
     "eslint-config-next": "15.3.5",
     "tailwindcss": "^4",
+    "tsx": "^4.23.13",
     "typescript": "^5"
   }
 }

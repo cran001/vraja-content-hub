@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 
-interface AuthUser { email: string; }
+interface AuthUser { email: string; role?: string; }
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -46,6 +46,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(email ? { email } : null);
     router.push('/dashboard');
   };
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    let active = true;
+    fetch('/api/admin/me', { headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` } })
+      .then(async response => {
+        if (!response.ok) throw new Error('Account unavailable');
+        const account = await response.json();
+        if (active) setUser(current => current ? { ...current, role: account.role } : null);
+      }).catch(() => {
+        if (active) { setIsAuthenticated(false); setUser(null); }
+      });
+    return () => { active = false; };
+  }, [isAuthenticated]);
 
   const logout = () => {
     localStorage.removeItem('authToken');

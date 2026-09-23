@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element -- CMS previews use local blob URLs and uploaded asset URLs without an image proxy. */
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
@@ -68,10 +69,10 @@ export default function BooksManager({ onAddNew }: BooksManagerProps) {
   };
 
   const handleDelete = async (book: BookRow) => {
-    if (!confirm(`Delete "${book.title}" and all of its ${book.page_count} page(s)? This cannot be undone.`)) return;
+    if (!confirm(`Delete "${book.title}" only if it has no pages and is not a story? Archive books that still have content.`)) return;
     setDeletingId(book.id);
     try {
-      const res = await fetch(`/api/admin/books?id=${book.id}`, {
+      const res = await fetch(`/api/admin/books?id=${book.id}&confirm=${book.id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` },
       });

@@ -1,15 +1,27 @@
-import { Pool } from 'pg';
+import { AsyncLocalStorage } from 'node:async_hooks';
+import { Pool, types, type PoolClient } from 'pg';
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
+// PostgreSQL DATE is a calendar day, never a server-local timestamp.
+types.setTypeParser(1082, value => value);
 
-// Exported for route handlers that need a single pinned connection
-// (e.g. multi-statement transactions, where pooled queries could
-// otherwise land on different connections).
-export { pool };
+export const pool = new Pool({ connectionString: process.env.DATABASE_URL, connectionTimeoutMillis:10000 });
+const transaction = new AsyncLocalStorage<PoolClient>();
+export const query = (sql: string, values?: unknown[]) =>
+  (transaction.getStore() ?? pool).query(sql, values);
 
-// The comment below tells ESLint to ignore the 'no-explicit-any' rule for the next line only.
-// This is the specific fix for the final Vercel deployment error.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const query = (text: string, params?: Array<any>) => pool.query(text, params);
+/** A handler's queries share a connection and transactional audit identity. */
+export async function inTransaction<T>(work: () => Promise<T>, actorId?: string): Promise<T> {
+  if (transaction.getStore()) return work();
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN ISOLATION LEVEL REPEATABLE READ');
+    if (actorId) await client.query("SELECT set_config('hub.actor_id', $1, true)", [actorId]);
+    const result = await transaction.run(client, work);
+    if (result instanceof Response && !result.ok) await client.query('ROLLBACK');
+    else await client.query('COMMIT');
+    return result;
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally { client.release(); }
+}

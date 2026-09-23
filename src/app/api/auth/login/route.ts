@@ -8,7 +8,7 @@ export async function POST(req: Request) {
     // 1. Get email and password from the request body
     const { email, password } = await req.json();
 
-    if (!email || !password) {
+    if (typeof email !== 'string' || typeof password !== 'string' || !email || !password || email.length > 255 || password.length > 1024) {
       return NextResponse.json({ message: 'Email and password are required.' }, { status: 400 });
     }
 
@@ -19,6 +19,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: 'Invalid credentials.' }, { status: 401 });
     }
     const user = userResult.rows[0];
+    if (!['super_admin', 'community_admin'].includes(user.role)) {
+      return NextResponse.json({ message: 'Account has no valid role.' }, { status: 403 });
+    }
 
     // 3. Compare the provided password with the stored hash
     const passwordsMatch = await bcrypt.compare(password, user.password_hash);
@@ -44,11 +47,11 @@ export async function POST(req: Request) {
       user: {
         id: user.id,
         email: user.email,
+        role: user.role,
       },
     }, { status: 200 });
 
-  } catch (error) {
-    console.error('Login error:', error);
+  } catch {
     return NextResponse.json({ message: 'An internal server error occurred.' }, { status: 500 });
   }
 }

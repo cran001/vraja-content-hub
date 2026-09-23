@@ -1,5 +1,7 @@
 "use client";
 
+import { uploadKey } from '@/lib/uploadKey';
+
 import { useState, useRef, ChangeEvent } from 'react';
 import { useToast } from '@/context/ToastContext';
 
@@ -36,7 +38,7 @@ export default function DarshanUploader() {
       try {
         const res = await fetch('/api/admin/wallpapers', {
           method: 'POST',
-          headers: { Authorization: `Bearer ${token}` },
+          headers: { 'Idempotency-Key': uploadKey(file, fd), Authorization: `Bearer ${token}` },
           body: fd,
         });
         if (res.ok) ok++;

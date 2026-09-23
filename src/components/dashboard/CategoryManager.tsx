@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useToast } from '@/context/ToastContext';
 
-interface Category { id: string; name: string; parent_id: string | null; level: number; slug: string; }
+interface Category { id: string; name: string; parent_id: string | null; level: number; slug: string; is_active?:boolean; is_selectable?:boolean; sort_order?:number; }
 
 interface CategoryManagerProps {
   categories: Category[];
@@ -16,6 +16,7 @@ export default function CategoryManager({ categories, onCategoriesChange }: Cate
   const [parentId, setParentId]     = useState('');
   const [isAdding, setIsAdding]     = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [dependencyReport,setDependencyReport]=useState<unknown>(null);
 
   const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : '';
 
@@ -37,28 +38,40 @@ export default function CategoryManager({ categories, onCategoriesChange }: Cate
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this category and all its children?')) return;
+    if (!confirm('Delete this category only if it is an empty leaf? Child categories and referenced media must be resolved first.')) return;
     setDeletingId(id);
     try {
-      const res = await fetch(`/api/admin/categories?id=${id}`, {
+      const res = await fetch(`/api/admin/categories?id=${id}&confirm=${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) throw new Error();
+      const data=await res.json();
+      if (!res.ok) {setDependencyReport(data.details??data);throw new Error(data.message);}
+      setDependencyReport(null);
       showToast('Category deleted.', 'info');
       onCategoriesChange();
-    } catch { showToast('Delete failed.', 'error'); }
+    } catch(error) { showToast(error instanceof Error?error.message:'Delete failed.', 'error'); }
     finally { setDeletingId(null); }
+  };
+
+  const update=async(id:string,patch:Record<string,unknown>)=>{
+    try{
+      const res=await fetch('/api/admin/categories',{method:'PUT',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({id,...patch})});
+      const data=await res.json();if(!res.ok)throw new Error(data.message);
+      onCategoriesChange();showToast('Category updated.');
+    }catch(error){showToast(String(error),'error');}
   };
 
   const levelPrefix = (level: number) => '└─ '.repeat(level);
   const levelColors = ['var(--accent)','var(--accent-2)','var(--success)','var(--text-secondary)'];
 
   return (
-    <div style={{ display:'grid', gridTemplateColumns:'1fr 340px', gap:'24px', alignItems:'start' }}>
+    <div className="editorial-grid">
       {/* Tree */}
       <div>
         <h3 className="card-title">Category Tree</h3>
+        <p>Inactive ancestors hide their descendants’ artwork. Counts include the full subtree; empty categories remain visible.</p>
+        {dependencyReport!=null&&<pre role="alert" className="editorial-json">{JSON.stringify(dependencyReport,null,2)}</pre>}
         {categories.length === 0 ? (
           <div className="empty-state"><div className="empty-icon">🗂️</div><p className="empty-text">No categories yet</p></div>
         ) : (
@@ -70,6 +83,9 @@ export default function CategoryManager({ categories, onCategoriesChange }: Cate
                   <span>{cat.name}</span>
                   <span style={{ fontSize:'0.68rem', color:'var(--text-muted)' }}>/{cat.slug}</span>
                 </div>
+                <label><input type="checkbox" checked={cat.is_active??true} onChange={e=>void update(cat.id,{is_active:e.target.checked})}/> Active</label>
+                <label><input type="checkbox" checked={cat.is_selectable??true} onChange={e=>void update(cat.id,{is_selectable:e.target.checked})}/> Selectable</label>
+                <label>Order <input key={`${cat.id}-${cat.sort_order}`} aria-label={`Sort order for ${cat.name}`} type="number" style={{width:65}} defaultValue={cat.sort_order??0} onBlur={e=>{const value=Number(e.target.value);if(value!==(cat.sort_order??0))void update(cat.id,{sort_order:value});}}/></label>
                 <button
                   className="btn btn-sm btn-danger"
                   onClick={() => handleDelete(cat.id)}

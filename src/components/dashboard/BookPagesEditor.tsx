@@ -1,4 +1,6 @@
+/* eslint-disable @next/next/no-img-element -- CMS previews use local blob URLs and uploaded asset URLs without an image proxy. */
 "use client";
+import { uploadKey } from '@/lib/uploadKey';
 
 import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/context/ToastContext';
@@ -133,7 +135,7 @@ export default function BookPagesEditor({ book, onBack }: BookPagesEditorProps) 
 
           const res = await fetch('/api/admin/book-pages', {
             method: 'POST',
-            headers: authHeaders,
+            headers: { ...authHeaders, 'Idempotency-Key':uploadKey(pf.file,fd) },
             body: fd,
           });
           if (!res.ok) throw new Error();
@@ -201,7 +203,7 @@ export default function BookPagesEditor({ book, onBack }: BookPagesEditorProps) 
     if (!confirm(`Delete page ${page.page_number} ("${page.title}")?`)) return;
     setDeletingPageId(page.id);
     try {
-      const res = await fetch(`/api/admin/book-pages?id=${page.id}`, {
+      const res = await fetch(`/api/admin/book-pages?id=${page.id}&confirm=${page.id}`, {
         method: 'DELETE',
         headers: authHeaders,
       });

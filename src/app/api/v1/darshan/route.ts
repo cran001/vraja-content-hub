@@ -1,35 +1,14 @@
-import { NextResponse } from 'next/server';
-import { query } from '@/lib/db';
+import { NextRequest, NextResponse } from 'next/server';
+import { publicMedia } from '@/lib/media';
+import { failure } from '@/lib/api';
 
-/**
- * GET /api/v1/darshan
- * Returns ONLY today's Darshan images.
- * The Android app calls this once per day; Vercel serves a tiny, curated response.
- */
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const { rows } = await query(
-      `SELECT
-         id, title, name, original_url, thumbnail_url, public_id,
-         visible_date, created_at
-       FROM wallpapers
-       WHERE is_active    = true
-         AND content_type = 'darshan'
-         AND visible_date = CURRENT_DATE
-         AND (expires_on IS NULL OR expires_on > CURRENT_DATE)
-       ORDER BY created_at DESC`,
-      []
-    );
-
-    return NextResponse.json(
-      { date: new Date().toISOString().split('T')[0], items: rows },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error('Failed to fetch darshan:', error);
-    return NextResponse.json(
-      { message: 'An internal server error occurred.' },
-      { status: 500 }
-    );
-  }
+    const result = await publicMedia(req.nextUrl.searchParams, 'darshan');
+    return NextResponse.json({ date: result.day, timezone: 'Asia/Kolkata', items: result.items }, { headers: {
+      'Cache-Control': 'no-cache', 'X-Content-Day': result.day, 'X-Content-Timezone': 'Asia/Kolkata',
+      'X-Reconciliation': result.paginated?'page-only':'complete-requested-scope',
+      ...(result.paginated?{'X-Page': String(result.page), 'X-Limit': String(result.limit)}:{}),
+    } });
+  } catch (error) { return failure(error); }
 }

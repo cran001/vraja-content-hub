@@ -1,5 +1,7 @@
 "use client";
 
+import { uploadKey } from '@/lib/uploadKey';
+
 import { useState, useRef, DragEvent, ChangeEvent } from 'react';
 import { useToast } from '@/context/ToastContext';
 
@@ -131,7 +133,7 @@ export default function BulkUploader({ categories, onCategoriesChange }: BulkUpl
         try {
           const res = await fetch('/api/admin/wallpapers', {
             method: 'POST',
-            headers: { Authorization: `Bearer ${token}` },
+            headers: { 'Idempotency-Key': uploadKey(pf.file, fd), Authorization: `Bearer ${token}` },
             body: fd,
           });
           if (!res.ok) throw new Error();

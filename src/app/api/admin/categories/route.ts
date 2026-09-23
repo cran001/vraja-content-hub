@@ -1,82 +1,56 @@
-import { NextResponse, NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { withAdmin } from '@/lib/admin';
 import { query } from '@/lib/db';
+import { ApiError, failure, uuid } from '@/lib/api';
 
-/**
- * GET  /api/admin/categories  — full category tree (flat list with parent_id)
- * POST /api/admin/categories  — create a category
- * DELETE /api/admin/categories?id=<uuid> — delete a leaf category
- */
-
-// --- GET: return all categories as a flat list; client builds the tree ---
-export async function GET() {
-  try {
-    const { rows } = await query(
-      `SELECT id, name, slug, parent_id, level, created_at
-       FROM categories
-       ORDER BY level ASC, name ASC`,
-      []
-    );
-    return NextResponse.json(rows, { status: 200 });
-  } catch (error) {
-    console.error('Failed to fetch categories:', error);
-    return NextResponse.json({ message: 'Internal server error.' }, { status: 500 });
-  }
-}
-
-// --- POST: create a new category ---
-export async function POST(req: NextRequest) {
+export const GET = withAdmin(async () => NextResponse.json((await query('SELECT * FROM categories ORDER BY level,sort_order,name,id')).rows), true);
+export const POST = withAdmin(async (req: NextRequest) => {
   try {
     const { name, parent_id } = await req.json();
-
-    if (!name || typeof name !== 'string' || name.trim() === '') {
-      return NextResponse.json({ message: 'Category name is required.' }, { status: 400 });
-    }
-
-    const slug = name.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-
-    // Determine level based on parent
+    if (typeof name !== 'string' || !name.trim() || name.length>255) throw new ApiError(400, 'Category name is required, up to 255 characters.');
     let level = 0;
-    if (parent_id) {
-      const parentResult = await query(
-        'SELECT level FROM categories WHERE id = $1',
-        [parent_id]
-      );
-      if (parentResult.rows.length === 0) {
-        return NextResponse.json({ message: 'Parent category not found.' }, { status: 404 });
-      }
-      level = parentResult.rows[0].level + 1;
+    if (parent_id != null) {
+      uuid(parent_id, 'parent_id');
+      const parent = (await query('SELECT level FROM categories WHERE id=$1 FOR UPDATE',[parent_id])).rows[0];
+      if (!parent) throw new ApiError(422, 'Parent category not found.');
+      level = parent.level+1;
     }
-
-    const { rows } = await query(
-      `INSERT INTO categories (name, slug, parent_id, level)
-       VALUES ($1, $2, $3, $4)
-       RETURNING *`,
-      [name.trim(), slug, parent_id ?? null, level]
-    );
-
-    return NextResponse.json(rows[0], { status: 201 });
-  } catch (error) {
-    console.error('Failed to create category:', error);
-    return NextResponse.json({ message: 'Internal server error.' }, { status: 500 });
-  }
-}
-
-// --- DELETE: remove a category (CASCADE deletes children) ---
-export async function DELETE(req: NextRequest) {
+    const slug = name.trim().toLowerCase().replace(/\s+/g,'-').replace(/[^\p{L}\p{N}-]/gu,'');
+    if (!slug) throw new ApiError(400, 'Name must contain letters or numbers.');
+    const conflict = await query('SELECT id FROM categories WHERE parent_id IS NOT DISTINCT FROM $1::uuid AND slug=$2',[parent_id??null,slug]);
+    if (conflict.rows.length) throw new ApiError(409, 'Category already exists under this parent.');
+    return NextResponse.json((await query('INSERT INTO categories(name,slug,parent_id,level) VALUES ($1,$2,$3,$4) RETURNING *',[name.trim(),slug,parent_id??null,level])).rows[0],{status:201});
+  } catch (error) { return failure(error); }
+});
+export const PUT = withAdmin(async (req: NextRequest) => {
   try {
-    const id = req.nextUrl.searchParams.get('id');
-    if (!id) {
-      return NextResponse.json({ message: 'Category ID is required.' }, { status: 400 });
+    const body = await req.json();
+    const id = uuid(body.id);
+    const fields = Object.keys(body).filter(k=>k!=='id');
+    if (!fields.length || fields.some(k=>!['name','is_active','is_selectable','sort_order'].includes(k))) throw new ApiError(400, 'Only name, is_active, is_selectable and sort_order may be updated.');
+    for (const field of fields) {
+      if (field==='name' && (typeof body[field]!=='string' || !body[field].trim() || body[field].length>255)) throw new ApiError(400,'Invalid name.');
+      if (field.startsWith('is_') && typeof body[field]!=='boolean') throw new ApiError(400,'Expected boolean.');
+      if (field==='sort_order' && (!Number.isInteger(body[field]) || Math.abs(body[field])>100000)) throw new ApiError(400,'Invalid sort order.');
     }
-
-    const result = await query('DELETE FROM categories WHERE id = $1 RETURNING id', [id]);
-    if (result.rows.length === 0) {
-      return NextResponse.json({ message: 'Category not found.' }, { status: 404 });
+    const result = await query(`UPDATE categories SET ${fields.map((f,i)=>f+'=$'+(i+1)).join(',')} WHERE id=$${fields.length+1} RETURNING *`,[...fields.map(f=>body[f]),id]);
+    if (!result.rows.length) throw new ApiError(404,'Category not found.');
+    return NextResponse.json(result.rows[0]);
+  } catch (error) { return failure(error); }
+});
+export const DELETE = withAdmin(async (req: NextRequest) => {
+  try {
+    const id = uuid(req.nextUrl.searchParams.get('id'));
+    const found = await query('SELECT id FROM categories WHERE id=$1 FOR UPDATE',[id]);
+    if (!found.rows.length) throw new ApiError(404,'Category not found.');
+    const categories = (await query(`WITH RECURSIVE sub AS (SELECT id,name,parent_id FROM categories WHERE id=$1
+      UNION ALL SELECT c.id,c.name,c.parent_id FROM categories c JOIN sub ON c.parent_id=sub.id)
+      SELECT * FROM sub`,[id])).rows;
+    const media = (await query('SELECT id,name,category_id,publication_state FROM wallpapers WHERE category_id=ANY($1::uuid[])',[categories.map(c=>c.id)])).rows;
+    if (categories.length>1 || media.length || req.nextUrl.searchParams.get('confirm')!==id) {
+      throw new ApiError(409,'Only an empty leaf category can be deleted. Reassign its media and remove children explicitly.',{categories,media});
     }
-
-    return NextResponse.json({ message: 'Category deleted successfully.' }, { status: 200 });
-  } catch (error) {
-    console.error('Failed to delete category:', error);
-    return NextResponse.json({ message: 'Internal server error.' }, { status: 500 });
-  }
-}
+    await query('DELETE FROM categories WHERE id=$1',[id]);
+    return NextResponse.json({message:'Empty leaf category deleted.'});
+  } catch (error) { return failure(error); }
+});

@@ -59,3 +59,159 @@ Content-Type: application/json
   "name": "krishna",
   "category": "Deities"
 }
+###############################################################################
+# DATED EVENTS  (calendar / home feed)
+# Replace <TOKEN> with a fresh admin JWT from POST /api/auth/login.
+###############################################################################
+
+### PUBLIC — events in a date range (bare JSON array; empty range is 200 [], never 404)
+GET http://localhost:3000/api/v1/events/dated?from=2026-08-01&to=2026-12-31
+
+### PUBLIC — no range: today through +400 days
+GET http://localhost:3000/api/v1/events/dated
+
+### ADMIN — list every event
+GET http://localhost:3000/api/admin/dated-events
+Authorization: Bearer <TOKEN>
+
+### ADMIN — create an Ekadashi with a normal parana window
+POST http://localhost:3000/api/admin/dated-events
+Authorization: Bearer <TOKEN>
+Content-Type: application/json
+
+{
+  "title": "Pandava Nirjala Ekadashi",
+  "titleHi": "पाण्डव निर्जला एकादशी",
+  "eventType": "Ekadashi",
+  "date": "2026-05-27",
+  "description": "Fasting even from water for those who are able.",
+  "fastingGuidelines": "Complete fast; break the fast during the parana window.",
+  "paranaDate": "2026-05-28",
+  "paranaStartTime": "05:24",
+  "paranaEndTime": "08:12",
+  "isMajorEvent": true
+}
+
+### ADMIN — the boundary case: fast may only be broken AFTER a time.
+# Hari Vasara ends past one-third of daylight, so there is no closing time and the app
+# renders "Parana after 10:50". Note paranaType: "after" and NO paranaEndTime.
+POST http://localhost:3000/api/admin/dated-events
+Authorization: Bearer <TOKEN>
+Content-Type: application/json
+
+{
+  "title": "Utpanna Ekadashi",
+  "eventType": "Ekadashi",
+  "date": "2026-12-05",
+  "description": "Hari Vasara ends late; break the fast only after the stated time.",
+  "paranaDate": "2026-12-06",
+  "paranaStartTime": "10:50",
+  "paranaType": "after"
+}
+
+### ADMIN — rejected: a start time with neither an end time nor paranaType "after" (400)
+POST http://localhost:3000/api/admin/dated-events
+Authorization: Bearer <TOKEN>
+Content-Type: application/json
+
+{
+  "title": "Half-specified window",
+  "eventType": "Ekadashi",
+  "date": "2026-12-05",
+  "paranaStartTime": "10:50"
+}
+
+### ADMIN — hide an event (visibility-only shorthand)
+PUT http://localhost:3000/api/admin/dated-events
+Authorization: Bearer <TOKEN>
+Content-Type: application/json
+
+{ "id": "<EVENT_UUID>", "is_active": false }
+
+### ADMIN — delete an event (ids are never reused)
+DELETE http://localhost:3000/api/admin/dated-events?id=<EVENT_UUID>
+Authorization: Bearer <TOKEN>
+
+###############################################################################
+# SCRIPTURES  (downloadable texts — public-domain only)
+###############################################################################
+
+### PUBLIC — catalogue (scriptures with zero verses are withheld)
+GET http://localhost:3000/api/v1/scriptures
+Accept-Encoding: gzip
+
+### PUBLIC — full text of one scripture (snake_case verse keys, gzipped)
+GET http://localhost:3000/api/v1/scriptures/nrsimha_tapani
+Accept-Encoding: gzip
+
+### ADMIN — catalogue with declared vs actual verse counts
+GET http://localhost:3000/api/admin/scriptures
+Authorization: Bearer <TOKEN>
+
+### ADMIN — create a catalogue entry (id defaults to a slug of the title)
+POST http://localhost:3000/api/admin/scriptures
+Authorization: Bearer <TOKEN>
+Content-Type: application/json
+
+{
+  "id": "nrsimha_tapani",
+  "title": "Nrsimha Tapani Upanishad",
+  "description": "An Upanishad on the worship of Lord Nrsimha.",
+  "category": "Upanishad",
+  "colorHex": "#7C6AF7",
+  "refPrefix": "NT",
+  "hasCantos": false,
+  "declaredVerseCount": 3
+}
+
+### ADMIN — upload the text (mode "replace" swaps it all in one transaction)
+POST http://localhost:3000/api/admin/scripture-verses
+Authorization: Bearer <TOKEN>
+Content-Type: application/json
+
+{
+  "scripture_id": "nrsimha_tapani",
+  "mode": "replace",
+  "verses": [
+    {
+      "chapter": 1,
+      "verse": 1,
+      "chapter_title": "Invocation",
+      "sanskrit": "ॐ नमो भगवते नृसिंहाय",
+      "iast": "oṁ namo bhagavate nṛsiṁhāya",
+      "translation": "Om, obeisances unto Lord Nrsimha.",
+      "word_for_word": [
+        { "word": "namaḥ", "meaning": "obeisances" },
+        { "word": "bhagavate", "meaning": "unto the Lord" }
+      ]
+    },
+    {
+      "chapter": 1,
+      "verse": 2,
+      "sanskrit": "…",
+      "iast": "…",
+      "translation": "…"
+    }
+  ]
+}
+
+### ADMIN — append a further batch (a request body is capped near 4.5 MB)
+POST http://localhost:3000/api/admin/scripture-verses
+Authorization: Bearer <TOKEN>
+Content-Type: application/json
+
+{
+  "scripture_id": "nrsimha_tapani",
+  "mode": "append",
+  "verses": [
+    { "chapter": 2, "verse": 1, "sanskrit": "…", "iast": "…", "translation": "…" }
+  ]
+}
+
+### ADMIN — a page of stored verses
+GET http://localhost:3000/api/admin/scripture-verses?scripture_id=nrsimha_tapani&limit=50&offset=0
+Authorization: Bearer <TOKEN>
+
+### ADMIN — clear the text but keep the catalogue entry
+DELETE http://localhost:3000/api/admin/scripture-verses?scripture_id=nrsimha_tapani&all=true
+Authorization: Bearer <TOKEN>
