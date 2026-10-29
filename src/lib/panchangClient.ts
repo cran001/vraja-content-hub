@@ -18,12 +18,8 @@
 // Configuration
 // ─────────────────────────────────────────────────────────────
 
-// ─────────────────────────────────────────────────────────────
-// Configuration
-// ─────────────────────────────────────────────────────────────
-
 const PANCHANG_SERVICE_URL = process.env.PANCHANG_SERVICE_URL || '';
-const PANCHANG_REQUEST_TIMEOUT_MS = parseInt(process.env.PANCHANG_REQUEST_TIMEOUT_MS || '10000', 10);
+const PANCHANG_REQUEST_TIMEOUT_MS = 8000; // 8 seconds timeout
 const MAX_LOCATION_KEY_LENGTH = 100;
 const MAX_TIMEZONE_LENGTH = 100;
 
@@ -131,7 +127,11 @@ export type PanchangResult<T> =
 // ─────────────────────────────────────────────────────────────
 
 function isConfigured(): boolean {
-  return Boolean(PANCHANG_SERVICE_URL && PANCHANG_SERVICE_URL.startsWith('http'));
+  const configured = Boolean(PANCHANG_SERVICE_URL && PANCHANG_SERVICE_URL.startsWith('http'));
+  if (!configured && typeof window === 'undefined') {
+    console.warn('[PanchangClient] PANCHANG_SERVICE_URL is not configured or invalid');
+  }
+  return configured;
 }
 
 function validateDate(date: string): boolean {

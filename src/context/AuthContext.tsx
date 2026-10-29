@@ -61,7 +61,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => { active = false; };
   }, [isAuthenticated]);
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch {
+      // Ignore logout API errors
+    }
     localStorage.removeItem('authToken');
     setIsAuthenticated(false);
     setUser(null);
