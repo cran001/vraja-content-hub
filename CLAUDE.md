@@ -1,0 +1,15 @@
+## MANDATORY TOOL BATCHING RULE (CRITICAL FOR COST)
+- NEVER execute sequential single-tool turns (reading one file, waiting, reading another file).
+- ALWAYS invoke all required file reads (`read_file` / `grep`) in PARALLEL inside a SINGLE turn.
+- ALWAYS batch all edits across files into the minimum possible number of turns.
+# VRAJA CONTENT HUB — COMPACT AI INDEX
+- Stack: Next.js 16.2.1 (App Router), React 19, PostgreSQL (`src/lib/db.ts`), Cloudinary (`src/lib/media.ts`).
+- Auth Login API: `src/app/api/auth/login/route.ts`
+- Admin Guard Helper: `src/lib/admin.ts` (Lines 18-47)
+- Middleware: `src/middleware.ts`
+- Dashboard Shell: `src/app/dashboard/page.tsx` (Lines 20-45)
+- Auth Context: `src/context/AuthContext.tsx`
+- Toast Context: `src/context/ToastContext.tsx`
+- Wallpaper UI: `src/components/WallpaperManager.tsx`
+- Panchang Client: `src/lib/panchangClient.ts`
+

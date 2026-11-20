@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, FormEvent } from 'react';
+import { useToast } from '@/context/ToastContext';
 
 // Define a type for our wallpaper object for TypeScript
 interface Wallpaper {
@@ -15,6 +16,7 @@ export default function WallpaperManager() {
   const [wallpapers, setWallpapers] = useState<Wallpaper[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const { showToast } = useToast();
 
   // State for managing the edit modal
   const [isEditing, setIsEditing] = useState(false);
@@ -70,12 +72,13 @@ export default function WallpaperManager() {
         throw new Error(data.message || 'Failed to delete wallpaper');
       }
       fetchWallpapers();
-    } catch (err: unknown) { // FIXED: Use 'unknown' for type safety
-      if (err instanceof Error) alert(`Error: ${err.message}`);
-      else alert('An unknown error occurred');
+      showToast('Wallpaper deleted successfully', 'success');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'An unknown error occurred';
+      showToast(`Error: ${message}`, 'error');
     }
   };
-  
+
   const handleUpload = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
@@ -93,10 +96,10 @@ export default function WallpaperManager() {
       }
       form.reset();
       fetchWallpapers();
-      alert('Wallpaper uploaded successfully!');
-    } catch (err: unknown) { // FIXED: Use 'unknown' for type safety
-      if (err instanceof Error) alert(`Error: ${err.message}`);
-      else alert('An unknown error occurred');
+      showToast('Wallpaper uploaded successfully', 'success');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'An unknown error occurred';
+      showToast(`Error: ${message}`, 'error');
     }
   };
 
@@ -123,10 +126,10 @@ export default function WallpaperManager() {
       }
       handleCloseModal();
       fetchWallpapers();
-      alert('Wallpaper updated successfully!');
-    } catch (err: unknown) { // FIXED: Use 'unknown' for type safety
-      if (err instanceof Error) alert(`Error: ${err.message}`);
-      else alert('An unknown error occurred');
+      showToast('Wallpaper updated successfully', 'success');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'An unknown error occurred';
+      showToast(`Error: ${message}`, 'error');
     }
   };
 

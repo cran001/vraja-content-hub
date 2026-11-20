@@ -42,7 +42,7 @@ export async function POST(req: Request) {
     );
 
     // 6. Return the token and user info
-    return NextResponse.json({
+    const response = NextResponse.json({
       token,
       user: {
         id: user.id,
@@ -50,6 +50,17 @@ export async function POST(req: Request) {
         role: user.role,
       },
     }, { status: 200 });
+
+    // Set httpOnly cookie for middleware authentication
+    response.cookies.set('admin_token', token, {
+      httpOnly: true,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 3600, // 1 hour
+      secure: process.env.NODE_ENV === 'production',
+    });
+
+    return response;
 
   } catch {
     return NextResponse.json({ message: 'An internal server error occurred.' }, { status: 500 });

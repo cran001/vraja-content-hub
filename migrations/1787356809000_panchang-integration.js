@@ -22,24 +22,19 @@ exports.up = (pgm) => {
   `);
 
   // Add enhanced calendar event metadata for Panchang service integration
+  // Note: description_hi and fasting_guidelines_hi already added in 1787356807000_editorial-contracts
   pgm.sql(`
     ALTER TABLE dated_events
-      ADD COLUMN description_hi text,
-      ADD COLUMN fasting_guidelines_hi text,
-      ADD COLUMN applicability text NOT NULL DEFAULT 'global'
+      ADD COLUMN IF NOT EXISTS applicability text NOT NULL DEFAULT 'global'
         CHECK (applicability IN ('global', 'tradition', 'region', 'location')),
-      ADD COLUMN scope_key text,
-      ADD COLUMN timing_location text,
-      ADD COLUMN timing_timezone text,
-      ADD COLUMN timing_source text,
-      ADD COLUMN cancelled boolean NOT NULL DEFAULT false,
-      ADD COLUMN panchang_event_id text,
-      ADD COLUMN panchang_observance_id text;
+      ADD COLUMN IF NOT EXISTS scope_key text,
+      ADD COLUMN IF NOT EXISTS timing_location text,
+      ADD COLUMN IF NOT EXISTS timing_timezone text,
+      ADD COLUMN IF NOT EXISTS timing_source text,
+      ADD COLUMN IF NOT EXISTS cancelled boolean NOT NULL DEFAULT false,
+      ADD COLUMN IF NOT EXISTS panchang_event_id text,
+      ADD COLUMN IF NOT EXISTS panchang_observance_id text;
 
-    COMMENT ON COLUMN dated_events.description_hi IS
-      'Hindi description - shown when complete Hindi title+description pair exists';
-    COMMENT ON COLUMN dated_events.fasting_guidelines_hi IS
-      'Hindi fasting guidance - requires complete title+description in Hindi';
     COMMENT ON COLUMN dated_events.applicability IS
       'Scope: global, tradition-specific, region-specific, or location-specific';
     COMMENT ON COLUMN dated_events.scope_key IS
